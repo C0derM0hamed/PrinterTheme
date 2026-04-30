@@ -1,0 +1,45 @@
+{#
+| Variable           | Description                                      |
+|--------------------|--------------------------------------------------|
+| component          | Merchant field values from twilight.json         |
+| component.title    | Section heading                                  |
+| component.subtitle | Eyebrow / subheading                             |
+| component.columns  | "3", "4", or "6"                                  |
+| component.services[] | Each item: icon, title, url                    |
+| position           | Sort order (0-based)                             |
+#}
+{% set cols = component.columns | default('4') %}
+{% set colClass = cols == '3' ? 'col-lg-4' : (cols == '6' ? 'col-lg-2' : 'col-lg-3') %}
+
+<section class="print-services-grid py-section" aria-label="{{ 'home.categories_title' | t | default('Print services') }}">
+  <div class="container-fluid px-xl-5">
+    {% if component.subtitle %}
+      <p class="section-eyebrow text-center mb-2 text-uppercase text-muted">{{ component.subtitle }}</p>
+    {% endif %}
+    {% if component.title %}
+      <header class="section-title mb-5 position-relative text-uppercase text-center">
+        <span class="section-title__text bg-white px-3">{{ component.title }}</span>
+        <span class="section-title__rule d-block mx-auto mt-3" aria-hidden="true"></span>
+      </header>
+    {% endif %}
+
+    {% if component.services | default([]) | length %}
+      <div class="row justify-content-center">
+        {% for service in component.services %}
+          <div class="{{ colClass }} col-sm-6 mb-4">
+            <a href="{{ service.url | default('#') }}" class="category-tile category-tile--service d-flex flex-column align-items-center text-center text-decoration-none p-4 rounded h-100">
+              {% if service.icon %}
+                <span class="category-tile__icon mb-3 d-inline-flex align-items-center justify-content-center rounded-circle">
+                  <i class="fa {{ service.icon }}" aria-hidden="true"></i>
+                </span>
+              {% endif %}
+              {% if service.title %}
+                <span class="font-weight-semibold">{{ service.title }}</span>
+              {% endif %}
+            </a>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </div>
+</section>

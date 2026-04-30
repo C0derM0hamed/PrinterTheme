@@ -1,0 +1,48 @@
+{#
+| Variable                  | Description                    |
+|---------------------------|--------------------------------|
+| component                 | Merchant field values          |
+| component.title           | Headline                       |
+| component.description     | Supporting copy                |
+| component.cta_label       | Primary button label           |
+| component.cta_url         | Primary button destination     |
+| component.background_image| Optional banner image URL       |
+| component.alignment       | start / center / end           |
+| position                  | Sort order                     |
+#}
+{% set align = component.alignment | default('center') %}
+{% set justify =
+  align == 'start'
+    ? 'justify-content-start text-left'
+    : (align == 'end' ? 'justify-content-end text-right' : 'justify-content-center text-center')
+%}
+
+<section class="quote-cta-band py-5 my-4 rounded overflow-hidden position-relative"
+         {% if component.background_image %}
+           style="background-image: linear-gradient(var(--overlay-dark, rgba(0,0,0,.45)), var(--overlay-dark, rgba(0,0,0,.45))), url('{{ component.background_image }}'); background-size: cover; background-position: center;"
+         {% else %}
+           style="background: linear-gradient(135deg, var(--color-primary, #0d6efd), var(--color-accent, #ff6b4a));"
+         {% endif %}>
+
+  <div class="container-fluid px-xl-5 position-relative py-5">
+    <div class="row">
+      <div class="col-lg-10 mx-auto d-flex flex-column {{ justify }}">
+
+        {% if component.title %}
+          <h2 class="text-white mb-3 font-weight-bold">{{ component.title }}</h2>
+        {% endif %}
+
+        {% if component.description %}
+          <p class="lead text-white mb-4" style="opacity: .92;">{{ component.description }}</p>
+        {% endif %}
+
+        {% if component.cta_label and component.cta_url %}
+          <div>
+            <a href="{{ component.cta_url }}" class="btn btn-light btn-lg font-weight-semibold">{{ component.cta_label }}</a>
+          </div>
+        {% endif %}
+
+      </div>
+    </div>
+  </div>
+</section>
