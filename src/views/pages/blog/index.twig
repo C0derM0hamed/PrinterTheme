@@ -1,0 +1,102 @@
+{% extends 'layouts/master.twig' %}
+
+{% block title %}{{ 'blog.title' | t | default('Blog') }} — {{ store.name }}{% endblock %}
+{% block description %}{{ 'blog.meta_description' | t | default('Tips, guides, and news from our printing experts.') }}{% endblock %}
+
+{% block content %}
+
+<nav class="breadcrumb-bar" aria-label="{{ 'nav.breadcrumb' | t | default('Breadcrumb') }}">
+  <div class="container-fluid px-xl-5">
+    <ol class="breadcrumb mb-0 py-3">
+      <li class="breadcrumb-item"><a href="{{ store.url }}">{{ 'nav.home' | t | default('Home') }}</a></li>
+      <li class="breadcrumb-item active" aria-current="page">{{ 'blog.title' | t | default('Blog') }}</li>
+    </ol>
+  </div>
+</nav>
+
+<div class="container-fluid px-xl-5 py-5">
+
+  {# ── Section heading ── #}
+  <div class="section-head text-center mb-5">
+    <p class="section-head__eyebrow">{{ 'blog.eyebrow' | t | default('Our Blog') }}</p>
+    <h1 class="section-head__title">{{ 'blog.heading' | t | default('Printing Tips & News') }}</h1>
+    <p class="section-head__sub text-muted">{{ 'blog.sub' | t | default('Expert advice on paper, finishes, and more.') }}</p>
+  </div>
+
+  {% if posts is defined and posts | length > 0 %}
+    <div class="row">
+      {% for post in posts %}
+        <div class="col-md-6 col-lg-4 mb-4">
+          <article class="blog-card card border-0 shadow-sm rounded-12 h-100">
+            {% if post.image %}
+              <a href="{{ post.url }}" class="blog-card__img-wrap" tabindex="-1" aria-hidden="true">
+                <img src="{{ post.image | image_resize(640, 360) }}"
+                     alt="{{ post.title }}"
+                     loading="lazy"
+                     class="card-img-top blog-card__img">
+              </a>
+            {% endif %}
+            <div class="card-body p-4 d-flex flex-column">
+              {% if post.category is defined and post.category %}
+                <span class="blog-card__cat badge badge-light mb-2">{{ post.category.name }}</span>
+              {% endif %}
+              <h2 class="blog-card__title h6 font-weight-600 mb-2">
+                <a href="{{ post.url }}" class="text-dark stretched-link">{{ post.title }}</a>
+              </h2>
+              <p class="blog-card__excerpt text-muted small flex-grow-1 mb-3">
+                {{ post.excerpt | default(post.content | striptags | slice(0, 140)) }}…
+              </p>
+              <div class="blog-card__meta d-flex align-items-center justify-content-between">
+                <span class="text-muted x-small">
+                  <i class="fa fa-calendar-alt mr-1" aria-hidden="true"></i>
+                  {{ post.created_at | date('d M Y') }}
+                </span>
+                <span class="text-muted x-small">
+                  <i class="fa fa-clock mr-1" aria-hidden="true"></i>
+                  {{ post.reading_time | default(3) }} {{ 'blog.min_read' | t | default('min read') }}
+                </span>
+              </div>
+            </div>
+          </article>
+        </div>
+      {% endfor %}
+    </div>
+
+    {# Pagination #}
+    {% if pagination is defined and pagination.last_page > 1 %}
+      <nav class="mt-4" aria-label="{{ 'common.pagination' | t | default('Pagination') }}">
+        <ul class="pagination justify-content-center">
+          {% if pagination.current_page > 1 %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ pagination.current_page - 1 }}">
+                <i class="fa fa-chevron-left" aria-hidden="true"></i>
+              </a>
+            </li>
+          {% endif %}
+          {% for p in 1..pagination.last_page %}
+            <li class="page-item {% if p == pagination.current_page %}active{% endif %}">
+              <a class="page-link" href="?page={{ p }}">{{ p }}</a>
+            </li>
+          {% endfor %}
+          {% if pagination.current_page < pagination.last_page %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ pagination.current_page + 1 }}">
+                <i class="fa fa-chevron-right" aria-hidden="true"></i>
+              </a>
+            </li>
+          {% endif %}
+        </ul>
+      </nav>
+    {% endif %}
+
+  {% else %}
+    <div class="empty-state text-center py-6">
+      <div class="empty-state__icon"><i class="fa fa-newspaper" aria-hidden="true"></i></div>
+      <h2 class="empty-state__title">{{ 'blog.empty_title' | t | default('No posts yet') }}</h2>
+      <p class="empty-state__body">{{ 'blog.empty_body' | t | default('Check back soon for printing tips and news.') }}</p>
+    </div>
+  {% endif %}
+
+</div>
+
+{% endblock %}

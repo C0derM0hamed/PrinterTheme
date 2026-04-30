@@ -1,0 +1,162 @@
+{% extends 'layouts/master.twig' %}
+
+{% block title %}{{ 'loyalty.title' | t | default('Loyalty Program') }} — {{ store.name }}{% endblock %}
+{% block description %}{{ 'loyalty.meta_description' | t | default('Earn points on every print order and redeem them for exclusive rewards.') }}{% endblock %}
+
+{% block content %}
+
+<nav class="breadcrumb-bar" aria-label="{{ 'nav.breadcrumb' | t | default('Breadcrumb') }}">
+  <div class="container-fluid px-xl-5">
+    <ol class="breadcrumb mb-0 py-3">
+      <li class="breadcrumb-item"><a href="{{ store.url }}">{{ 'nav.home' | t | default('Home') }}</a></li>
+      <li class="breadcrumb-item active" aria-current="page">{{ 'loyalty.title' | t | default('Loyalty') }}</li>
+    </ol>
+  </div>
+</nav>
+
+{# ─── Hero ───────────────────────────────────────────────────────────────────── #}
+<section class="loyalty-hero text-center py-6 bg-primary text-white">
+  <div class="container-fluid px-xl-5">
+    <div class="loyalty-hero__icon mb-4">
+      <i class="fa fa-star fa-3x" aria-hidden="true"></i>
+    </div>
+    <h1 class="loyalty-hero__title display-5 font-weight-700">{{ 'loyalty.hero_title' | t | default('Earn & Redeem Points') }}</h1>
+    <p class="loyalty-hero__sub lead mt-3 mb-0 mx-auto" style="max-width:560px;">
+      {{ 'loyalty.hero_body' | t | default('Every print order earns you points. Redeem them for discounts on your next job.') }}
+    </p>
+    {% if not customer.is_logged_in %}
+      <div class="mt-5">
+        <a href="/register" class="btn btn-light btn-lg mr-3">{{ 'auth.register' | t | default('Join Now') }}</a>
+        <a href="/login"    class="btn btn-outline-light btn-lg">{{ 'auth.login' | t | default('Sign In') }}</a>
+      </div>
+    {% endif %}
+  </div>
+</section>
+
+{# ─── Current balance ─────────────────────────────────────────────────────────── #}
+{% if customer.is_logged_in %}
+  <section class="loyalty-balance py-5 bg-light">
+    <div class="container-fluid px-xl-5">
+      <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+          <div class="card border-0 shadow-sm rounded-12 text-center p-5">
+            <p class="text-muted small mb-2">{{ 'loyalty.your_balance' | t | default('Your Balance') }}</p>
+            <div class="loyalty-balance__points display-4 font-weight-700 text-primary">
+              {{ customer.loyalty_points | default(0) }}
+            </div>
+            <p class="mt-1 text-muted">{{ 'loyalty.points_label' | t | default('points') }}</p>
+            {% if customer.loyalty_points is defined and customer.loyalty_points > 0 %}
+              <a href="/profile" class="btn btn-primary mt-4">
+                {{ 'loyalty.redeem_now' | t | default('Redeem Points') }}
+              </a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+{% endif %}
+
+{# ─── How it works ────────────────────────────────────────────────────────────── #}
+<section class="loyalty-how py-6">
+  <div class="container-fluid px-xl-5">
+    <div class="section-head text-center mb-5">
+      <p class="section-head__eyebrow">{{ 'loyalty.how_eyebrow' | t | default('Simple & Rewarding') }}</p>
+      <h2 class="section-head__title">{{ 'loyalty.how_title' | t | default('How It Works') }}</h2>
+    </div>
+    <div class="row text-center">
+      <div class="col-md-4 mb-4">
+        <div class="loyalty-step">
+          <div class="loyalty-step__icon"><i class="fa fa-shopping-bag" aria-hidden="true"></i></div>
+          <h3 class="loyalty-step__title h5 mt-3">{{ 'loyalty.step1_title' | t | default('Place an Order') }}</h3>
+          <p class="loyalty-step__body text-muted">{{ 'loyalty.step1_body' | t | default('Order any print product from our shop and earn 1 point per SAR spent.') }}</p>
+        </div>
+      </div>
+      <div class="col-md-4 mb-4">
+        <div class="loyalty-step">
+          <div class="loyalty-step__icon loyalty-step__icon--accent"><i class="fa fa-coins" aria-hidden="true"></i></div>
+          <h3 class="loyalty-step__title h5 mt-3">{{ 'loyalty.step2_title' | t | default('Accumulate Points') }}</h3>
+          <p class="loyalty-step__body text-muted">{{ 'loyalty.step2_body' | t | default('Points are credited automatically once your order is delivered.') }}</p>
+        </div>
+      </div>
+      <div class="col-md-4 mb-4">
+        <div class="loyalty-step">
+          <div class="loyalty-step__icon loyalty-step__icon--success"><i class="fa fa-gift" aria-hidden="true"></i></div>
+          <h3 class="loyalty-step__title h5 mt-3">{{ 'loyalty.step3_title' | t | default('Redeem Rewards') }}</h3>
+          <p class="loyalty-step__body text-muted">{{ 'loyalty.step3_body' | t | default('Use your points at checkout for instant discounts.') }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{# ─── Tiers ───────────────────────────────────────────────────────────────────── #}
+<section class="loyalty-tiers py-5 bg-light">
+  <div class="container-fluid px-xl-5">
+    <h2 class="section-head__title text-center mb-5">{{ 'loyalty.tiers_title' | t | default('Membership Tiers') }}</h2>
+    <div class="row justify-content-center">
+      {% set tiers = [
+        { name: 'loyalty.tier_silver' | t | default('Silver'), points: '0–999',    icon: 'fa-medal',  color: '#adb5bd', perks: ['loyalty.perk_1x' | t | default('1× points on all orders')] },
+        { name: 'loyalty.tier_gold'   | t | default('Gold'),   points: '1000–4999', icon: 'fa-trophy', color: '#f7b731', perks: ['loyalty.perk_1_5x' | t | default('1.5× points'), 'loyalty.perk_free_ship' | t | default('Free standard shipping')] },
+        { name: 'loyalty.tier_plat'   | t | default('Platinum'), points: '5000+',  icon: 'fa-crown',  color: '#00c9a7', perks: ['loyalty.perk_2x' | t | default('2× points'), 'loyalty.perk_free_ship' | t | default('Free shipping'), 'loyalty.perk_priority' | t | default('Priority production')] }
+      ] %}
+      {% for tier in tiers %}
+        <div class="col-md-4 mb-4">
+          <div class="loyalty-tier card border-0 shadow-sm rounded-12 text-center p-4 h-100">
+            <div class="loyalty-tier__icon mb-3" style="color:{{ tier.color }};">
+              <i class="fa {{ tier.icon }} fa-2x" aria-hidden="true"></i>
+            </div>
+            <h3 class="loyalty-tier__name h5 font-weight-700">{{ tier.name }}</h3>
+            <p class="loyalty-tier__range text-muted small mb-3">{{ tier.points }} {{ 'loyalty.points_label' | t | default('pts') }}</p>
+            <ul class="list-unstyled mb-0">
+              {% for perk in tier.perks %}
+                <li class="loyalty-tier__perk small">
+                  <i class="fa fa-check-circle text-success mr-2" aria-hidden="true"></i>{{ perk }}
+                </li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+{# ─── FAQ ─────────────────────────────────────────────────────────────────────── #}
+<section class="loyalty-faq py-6">
+  <div class="container-fluid px-xl-5">
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+        <h2 class="section-head__title text-center mb-5">{{ 'loyalty.faq_title' | t | default('Frequently Asked Questions') }}</h2>
+        <div class="accordion" id="loyalty-faq">
+          {% set faqs = [
+            { q: 'loyalty.faq1_q' | t | default('When do I receive my points?'), a: 'loyalty.faq1_a' | t | default('Points are credited within 24 hours of order delivery.') },
+            { q: 'loyalty.faq2_q' | t | default('Do points expire?'), a: 'loyalty.faq2_a' | t | default('Points are valid for 12 months from the date of earning.') },
+            { q: 'loyalty.faq3_q' | t | default('Can I use points with a coupon?'), a: 'loyalty.faq3_a' | t | default('Yes, points can be combined with coupon codes at checkout.') }
+          ] %}
+          {% for faq in faqs %}
+            <div class="card border-0 shadow-sm rounded-12 mb-2">
+              <div class="card-header bg-white border-0 p-0">
+                <h3 class="mb-0">
+                  <button class="btn btn-link btn-block text-left font-weight-600 p-4"
+                          type="button"
+                          data-toggle="collapse"
+                          data-target="#faq{{ loop.index }}"
+                          aria-expanded="{{ loop.first ? 'true' : 'false' }}">
+                    {{ faq.q }}
+                    <i class="fa fa-chevron-down float-right" aria-hidden="true"></i>
+                  </button>
+                </h3>
+              </div>
+              <div id="faq{{ loop.index }}" class="collapse {% if loop.first %}show{% endif %}" data-parent="#loyalty-faq">
+                <div class="card-body pt-0 px-4 pb-4 text-muted">{{ faq.a }}</div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

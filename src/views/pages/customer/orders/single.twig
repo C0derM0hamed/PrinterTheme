@@ -1,0 +1,169 @@
+{% extends 'layouts/master.twig' %}
+
+{% block title %}{{ 'order.reference_label' | t | default('Order #') }}{{ order.reference_id }} — {{ store.name }}{% endblock %}
+
+{% block content %}
+
+<nav class="breadcrumb-bar" aria-label="{{ 'nav.breadcrumb' | t | default('Breadcrumb') }}">
+  <div class="container-fluid px-xl-5">
+    <ol class="breadcrumb mb-0 py-3">
+      <li class="breadcrumb-item"><a href="{{ store.url }}">{{ 'nav.home' | t | default('Home') }}</a></li>
+      <li class="breadcrumb-item"><a href="/orders">{{ 'account.orders' | t | default('My Orders') }}</a></li>
+      <li class="breadcrumb-item active" aria-current="page">{{ 'order.reference_label' | t | default('#') }}{{ order.reference_id }}</li>
+    </ol>
+  </div>
+</nav>
+
+<div class="container-fluid px-xl-5 py-5">
+  <div class="row">
+
+    <div class="col-lg-3 mb-4 mb-lg-0">
+      <div class="account-sidebar card border-0 shadow-sm rounded-12">
+        <div class="card-body p-0">
+          <nav class="account-sidebar__nav">
+            <a href="/profile"       class="account-sidebar__link"><i class="fa fa-user mr-2" aria-hidden="true"></i>{{ 'account.profile' | t | default('Profile') }}</a>
+            <a href="/orders"        class="account-sidebar__link is-active"><i class="fa fa-box mr-2" aria-hidden="true"></i>{{ 'account.orders' | t | default('Orders') }}</a>
+            <a href="/wishlist"      class="account-sidebar__link"><i class="fa fa-heart mr-2" aria-hidden="true"></i>{{ 'wishlist.title' | t | default('Wishlist') }}</a>
+            <a href="/notifications" class="account-sidebar__link"><i class="fa fa-bell mr-2" aria-hidden="true"></i>{{ 'account.notifications' | t | default('Notifications') }}</a>
+            <a href="/logout"        class="account-sidebar__link account-sidebar__link--danger"><i class="fa fa-sign-out-alt mr-2" aria-hidden="true"></i>{{ 'auth.logout' | t | default('Logout') }}</a>
+          </nav>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-9">
+
+      {# Order header #}
+      <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+        <h1 class="h4 mb-0 font-weight-600">
+          {{ 'order.reference_label' | t | default('Order #') }}{{ order.reference_id }}
+        </h1>
+        <span class="badge order-status order-status--{{ order.status | lower | replace({' ': '-'}) }}">
+          {{ order.status_name | default(order.status) }}
+        </span>
+      </div>
+
+      {# Order timeline / tracking #}
+      {% if order.tracking is defined %}
+        <div class="card border-0 shadow-sm rounded-12 mb-4">
+          <div class="card-body p-4">
+            <h2 class="h6 font-weight-600 mb-3">{{ 'order.tracking' | t | default('Order Tracking') }}</h2>
+            <div class="order-timeline">
+              {% for step in order.tracking %}
+                <div class="order-timeline__step {% if step.completed %}is-done{% endif %}">
+                  <div class="order-timeline__dot"></div>
+                  <div class="order-timeline__label">{{ step.label }}</div>
+                  {% if step.date %}<div class="order-timeline__date text-muted small">{{ step.date }}</div>{% endif %}
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      {% endif %}
+
+      {# Items #}
+      <div class="card border-0 shadow-sm rounded-12 mb-4">
+        <div class="card-body p-4 p-md-5">
+          <h2 class="h6 font-weight-600 mb-4">{{ 'order.items' | t | default('Items') }}</h2>
+          {% if order.products is defined %}
+            {% for item in order.products %}
+              <div class="order-item d-flex align-items-start mb-4 pb-4 border-bottom">
+                <div class="order-item__img mr-3">
+                  {% if item.image %}
+                    <img src="{{ item.image | image_resize(80, 80) }}" alt="{{ item.name }}" loading="lazy" width="80" height="80" class="rounded">
+                  {% else %}
+                    <div class="order-item__img-placeholder rounded"><i class="fa fa-print" aria-hidden="true"></i></div>
+                  {% endif %}
+                </div>
+                <div class="flex-grow-1">
+                  <div class="d-flex justify-content-between">
+                    <span class="font-weight-500">{{ item.name }}</span>
+                    <span class="font-weight-600">{{ item.total | money }}</span>
+                  </div>
+                  <span class="text-muted small">{{ 'cart.quantity' | t | default('Qty') }}: {{ item.quantity }}</span>
+                  {% if item.options is defined and item.options %}
+                    <ul class="list-unstyled mb-0 mt-1">
+                      {% for opt in item.options %}
+                        <li class="small text-muted">{{ opt.name }}: {{ opt.value }}</li>
+                      {% endfor %}
+                    </ul>
+                  {% endif %}
+                  {% if item.notes %}
+                    <p class="small text-muted mt-1 mb-0">{{ item.notes }}</p>
+                  {% endif %}
+                </div>
+              </div>
+            {% endfor %}
+          {% endif %}
+
+          {# Totals #}
+          <dl class="order-totals mt-2">
+            {% if order.subtotal is defined %}
+              <div class="order-totals__row">
+                <dt>{{ 'cart.subtotal' | t | default('Subtotal') }}</dt>
+                <dd>{{ order.subtotal | money }}</dd>
+              </div>
+            {% endif %}
+            {% if order.discount is defined and order.discount > 0 %}
+              <div class="order-totals__row order-totals__row--discount">
+                <dt>{{ 'cart.discount' | t | default('Discount') }}</dt>
+                <dd>-{{ order.discount | money }}</dd>
+              </div>
+            {% endif %}
+            {% if order.shipping_cost is defined %}
+              <div class="order-totals__row">
+                <dt>{{ 'cart.shipping' | t | default('Shipping') }}</dt>
+                <dd>{{ order.shipping_cost | money }}</dd>
+              </div>
+            {% endif %}
+            {% if order.tax is defined and order.tax > 0 %}
+              <div class="order-totals__row">
+                <dt>{{ 'cart.tax' | t | default('VAT') }}</dt>
+                <dd>{{ order.tax | money }}</dd>
+              </div>
+            {% endif %}
+            <div class="order-totals__row order-totals__row--grand">
+              <dt>{{ 'cart.grand_total' | t | default('Total') }}</dt>
+              <dd>{{ order.amount | money }}</dd>
+            </div>
+          </dl>
+        </div>
+      </div>
+
+      {# Addresses + payment #}
+      <div class="row mb-4">
+        {% if order.shipping_address is defined %}
+          <div class="col-md-6 mb-3 mb-md-0">
+            <div class="card border-0 shadow-sm rounded-12 h-100">
+              <div class="card-body p-4">
+                <h3 class="h6 font-weight-600 mb-3">{{ 'order.shipping_address' | t | default('Shipping Address') }}</h3>
+                <address class="mb-0 text-muted small">
+                  {% set addr = order.shipping_address %}
+                  {{ addr.name }}<br>{{ addr.block }} {{ addr.street }}<br>{{ addr.city }}, {{ addr.country }}
+                </address>
+              </div>
+            </div>
+          </div>
+        {% endif %}
+        {% if order.payment_method is defined %}
+          <div class="col-md-6">
+            <div class="card border-0 shadow-sm rounded-12 h-100">
+              <div class="card-body p-4">
+                <h3 class="h6 font-weight-600 mb-3">{{ 'order.payment_method' | t | default('Payment') }}</h3>
+                <p class="text-muted mb-0 small">{{ order.payment_method }}</p>
+              </div>
+            </div>
+          </div>
+        {% endif %}
+      </div>
+
+      <a href="/orders" class="btn btn-outline-secondary">
+        <i class="fa fa-arrow-left mr-2" aria-hidden="true"></i>
+        {{ 'account.orders' | t | default('Back to Orders') }}
+      </a>
+
+    </div>
+  </div>
+</div>
+
+{% endblock %}

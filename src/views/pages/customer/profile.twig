@@ -1,0 +1,93 @@
+{% extends 'layouts/master.twig' %}
+
+{% block title %}{{ 'account.profile' | t | default('My Account') }} — {{ store.name }}{% endblock %}
+
+{% block content %}
+
+<nav class="breadcrumb-bar" aria-label="{{ 'nav.breadcrumb' | t | default('Breadcrumb') }}">
+  <div class="container-fluid px-xl-5">
+    <ol class="breadcrumb mb-0 py-3">
+      <li class="breadcrumb-item"><a href="{{ store.url }}">{{ 'nav.home' | t | default('Home') }}</a></li>
+      <li class="breadcrumb-item active" aria-current="page">{{ 'account.profile' | t | default('My Account') }}</li>
+    </ol>
+  </div>
+</nav>
+
+<div class="container-fluid px-xl-5 py-5">
+  <div class="row">
+
+    {# ── Sidebar nav ── #}
+    <div class="col-lg-3 mb-4 mb-lg-0">
+      {% include 'components/customer/account-sidebar.twig' ignore missing with { active: 'profile' } %}
+      {# Fallback inline sidebar if component not present #}
+      <div class="account-sidebar card border-0 shadow-sm rounded-12">
+        <div class="card-body p-0">
+          <nav class="account-sidebar__nav">
+            <a href="/profile"    class="account-sidebar__link is-active"><i class="fa fa-user mr-2" aria-hidden="true"></i>{{ 'account.profile' | t | default('Profile') }}</a>
+            <a href="/orders"     class="account-sidebar__link"><i class="fa fa-box mr-2" aria-hidden="true"></i>{{ 'account.orders' | t | default('Orders') }}</a>
+            <a href="/wishlist"   class="account-sidebar__link"><i class="fa fa-heart mr-2" aria-hidden="true"></i>{{ 'wishlist.title' | t | default('Wishlist') }}</a>
+            <a href="/notifications" class="account-sidebar__link"><i class="fa fa-bell mr-2" aria-hidden="true"></i>{{ 'account.notifications' | t | default('Notifications') }}</a>
+            <a href="/logout"     class="account-sidebar__link account-sidebar__link--danger"><i class="fa fa-sign-out-alt mr-2" aria-hidden="true"></i>{{ 'auth.logout' | t | default('Logout') }}</a>
+          </nav>
+        </div>
+      </div>
+    </div>
+
+    {# ── Main content ── #}
+    <div class="col-lg-9">
+      <div class="card border-0 shadow-sm rounded-12 mb-4">
+        <div class="card-body p-4 p-md-5">
+
+          <h1 class="h4 mb-4 font-weight-600">{{ 'account.profile_details' | t | default('Profile Details') }}</h1>
+
+          {# Avatar #}
+          <div class="d-flex align-items-center mb-5">
+            <div class="account-avatar mr-4">
+              {% if customer.avatar %}
+                <img src="{{ customer.avatar }}" alt="{{ customer.first_name }}" class="rounded-circle" width="80" height="80">
+              {% else %}
+                <div class="account-avatar__initials">{{ customer.first_name | slice(0,1) | upper }}{{ customer.last_name | slice(0,1) | upper }}</div>
+              {% endif %}
+            </div>
+            <div>
+              <h2 class="h5 mb-1">{{ customer.first_name }} {{ customer.last_name }}</h2>
+              <p class="text-muted mb-0 small">{{ customer.email }}</p>
+            </div>
+          </div>
+
+          {# Profile form — Salla handles submission #}
+          <salla-profile-form></salla-profile-form>
+
+          {# Fallback form if web component unavailable #}
+          <form action="/profile/update" method="post" class="account-form" novalidate>
+            <div class="form-row">
+              <div class="form-group col-md-6">
+                <label for="first_name">{{ 'account.first_name' | t | default('First Name') }}</label>
+                <input type="text" id="first_name" name="first_name" class="form-control" value="{{ customer.first_name }}">
+              </div>
+              <div class="form-group col-md-6">
+                <label for="last_name">{{ 'account.last_name' | t | default('Last Name') }}</label>
+                <input type="text" id="last_name" name="last_name" class="form-control" value="{{ customer.last_name }}">
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="email">{{ 'account.email' | t | default('Email') }}</label>
+              <input type="email" id="email" name="email" class="form-control" value="{{ customer.email }}" readonly>
+            </div>
+            <div class="form-group">
+              <label for="phone">{{ 'account.phone' | t | default('Phone') }}</label>
+              <input type="tel" id="phone" name="phone" class="form-control" value="{{ customer.mobile }}">
+            </div>
+            <button type="submit" class="btn btn-primary">
+              {{ 'account.save_changes' | t | default('Save Changes') }}
+            </button>
+          </form>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+{% endblock %}

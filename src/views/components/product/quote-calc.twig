@@ -1,0 +1,92 @@
+{#
+  Quote Calculator — components/product/quote-calc.twig
+  -----------------------------------------------------
+  Live pricing panel displayed inside the product info column.
+  On desktop it sits below the add-to-cart row; on mobile it
+  collapses into the sticky bottom bar via CSS.
+
+  All values are updated in real-time by product.js without a server
+  round-trip. The delivery ETA uses the JS Intl.DateTimeFormat API for
+  locale-aware date formatting.
+
+  Data attributes read by product.js:
+  - data-base-days on #delivery-eta-row: base delivery days offset.
+    Defaults to theme.settings.get('delivery_base_days') or 3.
+
+  The panel is shown when enable_print_specs OR standard product has
+  a price worth highlighting — so it is included unconditionally here
+  and the JS shows/hides the ETA row based on spec state.
+#}
+
+{% set _base_days = theme.settings.get('delivery_base_days') | default(3) %}
+
+<div class="quote-panel card border-0 bg-light rounded mb-4" id="quote-panel"
+     aria-label="{{ 'quote.panel_label' | t | default('Order summary') }}">
+
+  <div class="card-body p-4">
+
+    <h6 class="quote-panel__title mb-3">
+      <i class="fa fa-calculator text-primary mr-2" aria-hidden="true"></i>
+      {{ 'quote.title' | t | default('Price Estimate') }}
+    </h6>
+
+    <dl class="quote-panel__rows mb-0">
+
+      {# Unit price row #}
+      <div class="quote-row d-flex justify-content-between align-items-center py-2 border-bottom">
+        <dt class="quote-row__label text-muted font-weight-normal mb-0">
+          {{ 'quote.unit_price' | t | default('Unit Price') }}
+        </dt>
+        <dd class="quote-row__value font-weight-medium mb-0" id="q-unit-price">—</dd>
+      </div>
+
+      {# Quantity row #}
+      <div class="quote-row d-flex justify-content-between align-items-center py-2 border-bottom">
+        <dt class="quote-row__label text-muted font-weight-normal mb-0">
+          {{ 'quote.quantity' | t | default('Quantity') }}
+        </dt>
+        <dd class="quote-row__value font-weight-medium mb-0" id="q-quantity">1</dd>
+      </div>
+
+      {# Finishing row (hidden when no finishing selected) #}
+      <div class="quote-row d-flex justify-content-between align-items-center py-2 border-bottom d-none"
+           id="q-finishing-row">
+        <dt class="quote-row__label text-muted font-weight-normal mb-0">
+          {{ 'quote.finishing' | t | default('Finishing') }}
+        </dt>
+        <dd class="quote-row__value font-weight-medium mb-0" id="q-finishing-cost">—</dd>
+      </div>
+
+      {# Subtotal (before finishing) – shown when specs are active #}
+      <div class="quote-row d-flex justify-content-between align-items-center py-2 border-bottom d-none"
+           id="q-subtotal-row">
+        <dt class="quote-row__label text-muted font-weight-normal mb-0">
+          {{ 'quote.subtotal' | t | default('Subtotal') }}
+        </dt>
+        <dd class="quote-row__value font-weight-medium mb-0" id="q-subtotal">—</dd>
+      </div>
+
+      {# Delivery ETA row #}
+      <div class="quote-row d-flex justify-content-between align-items-center py-2"
+           id="delivery-eta-row"
+           data-base-days="{{ _base_days }}">
+        <dt class="quote-row__label text-muted font-weight-normal mb-0">
+          <i class="fa fa-truck mr-1" aria-hidden="true"></i>
+          {{ 'quote.delivery_eta' | t | default('Estimated Delivery') }}
+        </dt>
+        <dd class="quote-row__value font-weight-medium mb-0 text-success" id="q-delivery-eta">
+          <span class="skeleton-line" aria-hidden="true">—</span>
+        </dd>
+      </div>
+
+    </dl>
+
+    {# Grand total highlight #}
+    <div class="quote-panel__total d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
+      <span class="font-weight-bold h6 mb-0">{{ 'quote.total' | t | default('Total') }}</span>
+      <span class="font-weight-bold h5 mb-0 text-primary" id="q-total"
+            aria-live="polite" aria-atomic="true">—</span>
+    </div>
+
+  </div>{# /.card-body #}
+</div>{# /.quote-panel #}

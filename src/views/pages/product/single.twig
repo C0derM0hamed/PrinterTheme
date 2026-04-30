@@ -1,0 +1,550 @@
+{% extends 'layouts/master.twig' %}
+
+{% block title %}{{ product.name }} — {{ store.name }}{% endblock %}
+{% block description %}{{ product.description | striptags | slice(0, 160) }}{% endblock %}
+
+{% block head %}
+  {{ parent() }}
+  <meta property="og:type"        content="product">
+  <meta property="og:title"       content="{{ product.name }}">
+  <meta property="og:description" content="{{ product.description | striptags | slice(0, 160) }}">
+  <meta property="og:image"       content="{{ product.thumbnail }}">
+  <meta property="og:url"         content="{{ product.url }}">
+  <meta name="twitter:card"       content="summary_large_image">
+{% endblock %}
+
+{% block content %}
+
+{# ─── Breadcrumb ────────────────────────────────────────────────────────────── #}
+<nav class="breadcrumb-bar" aria-label="{{ 'nav.breadcrumb' | t | default('Breadcrumb') }}">
+  <div class="container-fluid px-xl-5">
+    <ol class="breadcrumb mb-0 py-3">
+      <li class="breadcrumb-item">
+        <a href="{{ store.url }}">{{ 'nav.home' | t | default('Home') }}</a>
+      </li>
+      {% if product.category is defined and product.category %}
+        <li class="breadcrumb-item">
+          <a href="{{ product.category.url }}">{{ product.category.name }}</a>
+        </li>
+      {% endif %}
+      <li class="breadcrumb-item active" aria-current="page">{{ product.name }}</li>
+    </ol>
+  </div>
+</nav>
+
+{# ─── Product Detail ─────────────────────────────────────────────────────────── #}
+<div class="container-fluid pb-5 pt-4 px-xl-5" id="product-page"
+     data-product-id="{{ product.id }}"
+     data-base-price="{{ product.on_sale ? product.sale_price : product.price }}"
+     data-currency="{{ store.currency.code | default('SAR') }}">
+
+  <div class="row">
+
+    {# ══════════════════════════════════════════════════════════════════
+       LEFT COLUMN — Gallery
+       ══════════════════════════════════════════════════════════════════ #}
+    <div class="col-lg-5 mb-5 mb-lg-0">
+      <div class="product-gallery sticky-top" style="top: calc(var(--header-height, 70px) + 1rem);">
+
+        {# Main carousel #}
+        <div id="product-carousel" class="carousel slide product-gallery__carousel" data-ride="carousel">
+          <div class="carousel-inner border rounded overflow-hidden">
+            {% set _images = product.images | default([]) %}
+            {% if _images | length > 0 %}
+              {% for image in _images %}
+                <div class="carousel-item {% if loop.first %}active{% endif %}" style="height: 460px;">
+                  <img
+                    class="p-3"
+                    src="{{ image | image_resize(460, 460) }}"
+                    alt="{{ product.name }}{% if not loop.first %} — {{ 'product.image' | t | default('image') }} {{ loop.index }}{% endif %}"
+                    loading="{% if loop.first %}eager{% else %}lazy{% endif %}"
+                    style="object-fit:contain; width:100%; height:100%;">
+                </div>
+              {% endfor %}
+            {% else %}
+              <div class="carousel-item active" style="height: 460px;">
+                <img
+                  class="p-3"
+                  src="{{ product.thumbnail | image_resize(460, 460) }}"
+                  alt="{{ product.name }}"
+                  style="object-fit:contain; width:100%; height:100%;">
+              </div>
+            {% endif %}
+          </div>
+
+          {% if _images | length > 1 %}
+            <a class="carousel-control-prev" href="#product-carousel" role="button" data-slide="prev"
+               aria-label="{{ 'common.prev' | t | default('Previous') }}">
+              <i class="fa fa-angle-left fa-2x text-dark" aria-hidden="true"></i>
+            </a>
+            <a class="carousel-control-next" href="#product-carousel" role="button" data-slide="next"
+               aria-label="{{ 'common.next' | t | default('Next') }}">
+              <i class="fa fa-angle-right fa-2x text-dark" aria-hidden="true"></i>
+            </a>
+          {% endif %}
+        </div>
+
+        {# Thumbnail strip #}
+        {% if _images | length > 1 %}
+          <div class="product-gallery__thumbs d-flex flex-wrap mt-3" role="list">
+            {% for image in _images | slice(0, 6) %}
+              <button
+                type="button"
+                class="product-gallery__thumb{% if loop.first %} active{% endif %}"
+                role="listitem"
+                data-slide-to="{{ loop.index0 }}"
+                data-target="#product-carousel"
+                aria-label="{{ 'product.thumbnail' | t | default('Thumbnail') }} {{ loop.index }}"
+                style="background-image: url('{{ image | image_resize(80, 80) }}')">
+              </button>
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        {# Share row #}
+        <div class="product-share mt-4 d-flex align-items-center">
+          <span class="text-muted mr-3 font-weight-medium" style="font-size:var(--fs-14);">
+            {{ 'product.share' | t | default('Share') }}:
+          </span>
+          {% if store.social.twitter is defined %}
+            <a class="btn btn-square btn-outline-secondary mr-2"
+               href="https://twitter.com/intent/tweet?url={{ product.url | url_encode }}&text={{ product.name | url_encode }}"
+               target="_blank" rel="noopener"
+               aria-label="Twitter">
+              <i class="fa-brands fa-twitter" aria-hidden="true"></i>
+            </a>
+          {% endif %}
+          <a class="btn btn-square btn-outline-secondary mr-2"
+             href="https://wa.me/?text={{ product.name | url_encode }}%20{{ product.url | url_encode }}"
+             target="_blank" rel="noopener"
+             aria-label="WhatsApp">
+            <i class="fa-brands fa-whatsapp" aria-hidden="true"></i>
+          </a>
+          <a class="btn btn-square btn-outline-secondary"
+             href="https://www.facebook.com/sharer/sharer.php?u={{ product.url | url_encode }}"
+             target="_blank" rel="noopener"
+             aria-label="Facebook">
+            <i class="fa-brands fa-facebook-f" aria-hidden="true"></i>
+          </a>
+        </div>
+
+      </div>{# /.product-gallery #}
+    </div>
+
+    {# ══════════════════════════════════════════════════════════════════
+       RIGHT COLUMN — Info + Options + Print toolkit
+       ══════════════════════════════════════════════════════════════════ #}
+    <div class="col-lg-7">
+      <div class="product-info">
+
+        {# Product name #}
+        <h1 class="product-info__name">{{ product.name }}</h1>
+
+        {# Rating row #}
+        {% if product.rating is defined and product.rating %}
+          <div class="product-rating product-info__rating mb-3"
+               aria-label="{{ product.rating }}/5 {{ 'product.stars' | t | default('stars') }}">
+            {% for i in 1..5 %}
+              <i class="fa fa-star{% if i > product.rating %} is-empty{% endif %}" aria-hidden="true"></i>
+            {% endfor %}
+            <a href="#tab-reviews" class="product-rating__count">
+              ({{ product.reviews_count | default(0) }} {{ 'product.reviews' | t | default('reviews') }})
+            </a>
+          </div>
+        {% endif %}
+
+        {# Price block #}
+        <div class="product-info__price mb-3">
+          {% if product.on_sale %}
+            <span class="product-price__sale fs-32" id="display-price"
+                  data-base="{{ product.sale_price }}">
+              {{ product.sale_price | money }}
+            </span>
+            <span class="product-price__old ml-2"><del>{{ product.price | money }}</del></span>
+            {% set _pct = ((product.price - product.sale_price) / product.price * 100) | round %}
+            {% if _pct > 0 %}
+              <span class="badge badge-danger ml-2">-{{ _pct }}%</span>
+            {% endif %}
+          {% else %}
+            <span class="product-price__regular fs-32" id="display-price"
+                  data-base="{{ product.price }}">
+              {{ product.price | money }}
+            </span>
+          {% endif %}
+        </div>
+
+        {# Short description / excerpt #}
+        {% if product.excerpt is defined and product.excerpt %}
+          <p class="product-info__excerpt text-muted mb-4">{{ product.excerpt }}</p>
+        {% endif %}
+
+        {# Stock / availability #}
+        <p class="product-info__stock mb-4">
+          {% if product.quantity > 0 %}
+            <i class="fa fa-check-circle text-success mr-1" aria-hidden="true"></i>
+            <span class="text-success font-weight-medium">
+              {{ 'product.in_stock' | t | default('In Stock') }}
+            </span>
+            <span class="text-muted ml-1">({{ product.quantity }} {{ 'product.units' | t | default('units') }})</span>
+          {% else %}
+            <i class="fa fa-times-circle text-danger mr-1" aria-hidden="true"></i>
+            <span class="text-danger font-weight-medium">
+              {{ 'product.out_of_stock' | t | default('Out of Stock') }}
+            </span>
+          {% endif %}
+        </p>
+
+        {# ── Product Options from Salla ────────────────────────────── #}
+        {% for option in product.options | default([]) %}
+          <div class="product-option mb-4" data-option-id="{{ option.id }}" data-required="{{ option.required | default(false) ? 'true' : 'false' }}">
+            <label class="product-option__label">
+              {{ option.name }}
+              {% if option.required | default(false) %}
+                <span class="text-danger ml-1" aria-hidden="true">*</span>
+              {% endif %}
+            </label>
+
+            {# Color swatch #}
+            {% if option.type == 'color' %}
+              <div class="option-group option-group--color d-flex flex-wrap" role="group" aria-label="{{ option.name }}">
+                {% for value in option.values %}
+                  <button
+                    type="button"
+                    class="btn btn-option-color"
+                    data-option-id="{{ option.id }}"
+                    data-value-id="{{ value.id }}"
+                    data-price-add="{{ value.price_add | default(0) }}"
+                    style="background-color:{{ value.color }};"
+                    title="{{ value.name }}{% if value.price_add > 0 %} (+{{ value.price_add | money }}){% endif %}"
+                    aria-label="{{ value.name }}">
+                  </button>
+                {% endfor %}
+              </div>
+
+            {# Image swatch #}
+            {% elseif option.type == 'image' %}
+              <div class="option-group option-group--image d-flex flex-wrap" role="group" aria-label="{{ option.name }}">
+                {% for value in option.values %}
+                  <button
+                    type="button"
+                    class="btn btn-option-image p-0"
+                    data-option-id="{{ option.id }}"
+                    data-value-id="{{ value.id }}"
+                    data-price-add="{{ value.price_add | default(0) }}"
+                    title="{{ value.name }}{% if value.price_add > 0 %} (+{{ value.price_add | money }}){% endif %}"
+                    aria-label="{{ value.name }}">
+                    <img
+                      src="{{ value.image | image_resize(60, 60) }}"
+                      alt="{{ value.name }}"
+                      loading="lazy"
+                      width="60" height="60">
+                  </button>
+                {% endfor %}
+              </div>
+
+            {# Radio / text chips #}
+            {% elseif option.type == 'radio' or option.type == 'text' %}
+              <div class="option-group option-group--chip d-flex flex-wrap" role="group" aria-label="{{ option.name }}">
+                {% for value in option.values %}
+                  <button
+                    type="button"
+                    class="btn btn-option-chip"
+                    data-option-id="{{ option.id }}"
+                    data-value-id="{{ value.id }}"
+                    data-price-add="{{ value.price_add | default(0) }}"
+                    aria-label="{{ value.name }}{% if value.price_add > 0 %} +{{ value.price_add | money }}{% endif %}">
+                    {{ value.name }}
+                    {% if value.price_add > 0 %}
+                      <small class="option-chip__price-add">+{{ value.price_add | money }}</small>
+                    {% endif %}
+                  </button>
+                {% endfor %}
+              </div>
+
+            {# Select / dropdown #}
+            {% else %}
+              <select
+                class="form-control option-select"
+                data-option-id="{{ option.id }}"
+                name="option[{{ option.id }}]"
+                aria-label="{{ option.name }}">
+                <option value="">— {{ 'product.select' | t | default('Select') }} {{ option.name }} —</option>
+                {% for value in option.values %}
+                  <option
+                    value="{{ value.id }}"
+                    data-price-add="{{ value.price_add | default(0) }}">
+                    {{ value.name }}{% if value.price_add > 0 %} (+{{ value.price_add | money }}){% endif %}
+                  </option>
+                {% endfor %}
+              </select>
+            {% endif %}
+
+          </div>
+        {% endfor %}
+
+        {# ── Print Specs Toolkit ──────────────────────────────────────── #}
+        {% if theme.settings.get('enable_print_specs') | default(true) %}
+          {% include 'components/product/print-specs.twig' ignore missing %}
+        {% endif %}
+
+        {# ── Quantity + Add to Cart ───────────────────────────────────── #}
+        <div class="product-add-row d-flex align-items-center flex-wrap mb-4 mt-2" id="product-add-row">
+
+          {# Quantity stepper #}
+          <div class="input-group quantity mr-3" style="width: 130px;" role="group" aria-label="{{ 'product.quantity' | t | default('Quantity') }}">
+            <div class="input-group-prepend">
+              <button
+                class="btn btn-outline-secondary btn-minus"
+                type="button"
+                aria-label="{{ 'common.decrease' | t | default('Decrease') }}">
+                <i class="fa fa-minus" aria-hidden="true"></i>
+              </button>
+            </div>
+            <input
+              type="number"
+              id="product-qty"
+              class="form-control bg-secondary border-0 text-center font-weight-medium"
+              value="{{ product.minimum_quantity | default(1) }}"
+              min="{{ product.minimum_quantity | default(1) }}"
+              max="{{ product.quantity | default(9999) }}"
+              step="{{ product.quantity_step | default(1) }}"
+              aria-label="{{ 'product.quantity' | t | default('Quantity') }}">
+            <div class="input-group-append">
+              <button
+                class="btn btn-outline-secondary btn-plus"
+                type="button"
+                aria-label="{{ 'common.increase' | t | default('Increase') }}">
+                <i class="fa fa-plus" aria-hidden="true"></i>
+              </button>
+            </div>
+          </div>
+
+          {# Add to cart #}
+          <button
+            class="btn btn-primary btn-lg btn-add-to-cart flex-fill"
+            id="btn-add-to-cart"
+            type="button"
+            data-product-id="{{ product.id }}"
+            {% if product.quantity == 0 %}disabled aria-disabled="true"{% endif %}>
+            <span class="btn-atc-icon"><i class="fa fa-shopping-cart mr-2" aria-hidden="true"></i></span>
+            <span class="btn-atc-label">
+              {% if product.quantity == 0 %}
+                {{ 'product.out_of_stock' | t | default('Out of Stock') }}
+              {% else %}
+                {{ 'product.add_to_cart' | t | default('Add to Cart') }}
+              {% endif %}
+            </span>
+            <span class="btn-atc-spinner spinner-border spinner-border-sm ml-2 d-none" role="status" aria-hidden="true"></span>
+          </button>
+
+          {# Wishlist #}
+          <button
+            class="btn btn-outline-secondary btn-wishlist ml-2"
+            type="button"
+            data-product-id="{{ product.id }}"
+            aria-label="{{ 'product.add_to_wishlist' | t | default('Add to wishlist') }}">
+            <i class="fa fa-heart{% if not product.in_wishlist | default(false) %}-o{% endif %}" aria-hidden="true"></i>
+          </button>
+
+        </div>
+
+        {# ── Quote Calculator ──────────────────────────────────────────── #}
+        {% if theme.settings.get('enable_print_specs') | default(true) %}
+          {% include 'components/product/quote-calc.twig' ignore missing %}
+        {% endif %}
+
+        {# ── File Upload Zone ──────────────────────────────────────────── #}
+        {% if theme.settings.get('enable_file_upload') | default(true) %}
+          {% include 'components/product/upload-zone.twig' ignore missing %}
+        {% endif %}
+
+        {# ── Meta row: SKU / Brand ──────────────────────────────────────── #}
+        <div class="product-meta mt-4 pt-3 border-top">
+          {% if product.sku is defined and product.sku %}
+            <div class="product-meta__row">
+              <span class="product-meta__label">{{ 'product.sku' | t | default('SKU') }}:</span>
+              <span class="product-meta__value">{{ product.sku }}</span>
+            </div>
+          {% endif %}
+          {% if product.brand is defined and product.brand %}
+            <div class="product-meta__row">
+              <span class="product-meta__label">{{ 'product.brand' | t | default('Brand') }}:</span>
+              <a href="{{ product.brand.url | default('#') }}" class="product-meta__value">{{ product.brand.name }}</a>
+            </div>
+          {% endif %}
+          {% if product.tags is defined and product.tags | length %}
+            <div class="product-meta__row">
+              <span class="product-meta__label">{{ 'product.tags' | t | default('Tags') }}:</span>
+              <span class="product-meta__value">
+                {% for tag in product.tags %}
+                  <a href="/products?tag={{ tag | url_encode }}" class="badge badge-secondary mr-1">{{ tag }}</a>
+                {% endfor %}
+              </span>
+            </div>
+          {% endif %}
+        </div>
+
+      </div>{# /.product-info #}
+    </div>{# /.col-lg-7 #}
+  </div>{# /.row #}
+
+  {# ─── Mobile sticky Add-to-Cart bar ─────────────────────────────────────── #}
+  <div class="mobile-atc-bar d-lg-none" id="mobile-atc-bar" aria-hidden="true">
+    <div class="d-flex align-items-center">
+      {% if product.thumbnail %}
+        <img src="{{ product.thumbnail | image_resize(48, 48) }}" alt="" class="rounded mr-3" width="48" height="48">
+      {% endif %}
+      <div class="flex-fill">
+        <div class="font-weight-medium text-truncate" style="max-width: 200px;">{{ product.name }}</div>
+        <div class="font-weight-bold text-primary" id="mobile-display-price">{{ product.on_sale ? product.sale_price : product.price | money }}</div>
+      </div>
+      <button
+        class="btn btn-primary ml-3"
+        type="button"
+        id="mobile-btn-add-to-cart"
+        {% if product.quantity == 0 %}disabled{% endif %}>
+        {{ 'product.add_to_cart' | t | default('Add to Cart') }}
+      </button>
+    </div>
+  </div>
+
+  {# ─── Product Tabs: Description / Reviews ────────────────────────────────── #}
+  <div class="row mt-5">
+    <div class="col-12">
+
+      <ul class="nav nav-tabs product-tabs" id="product-tabs" role="tablist">
+        <li class="nav-item" role="presentation">
+          <a class="nav-link active"
+             id="tab-desc-link"
+             data-toggle="tab"
+             href="#tab-description"
+             role="tab"
+             aria-controls="tab-description"
+             aria-selected="true">
+            {{ 'product.description' | t | default('Description') }}
+          </a>
+        </li>
+        <li class="nav-item" role="presentation">
+          <a class="nav-link"
+             id="tab-rev-link"
+             data-toggle="tab"
+             href="#tab-reviews"
+             role="tab"
+             aria-controls="tab-reviews"
+             aria-selected="false">
+            {{ 'product.reviews' | t | default('Reviews') }}
+            <span class="badge badge-pill badge-secondary ml-1">{{ product.reviews_count | default(0) }}</span>
+          </a>
+        </li>
+        {% if product.specifications is defined and product.specifications | length %}
+          <li class="nav-item" role="presentation">
+            <a class="nav-link"
+               id="tab-spec-link"
+               data-toggle="tab"
+               href="#tab-specs"
+               role="tab"
+               aria-controls="tab-specs"
+               aria-selected="false">
+              {{ 'product.specifications' | t | default('Specifications') }}
+            </a>
+          </li>
+        {% endif %}
+      </ul>
+
+      <div class="tab-content product-tabs__content border border-top-0 rounded-bottom p-4" id="product-tabs-content">
+
+        {# Description tab #}
+        <div class="tab-pane fade show active" id="tab-description" role="tabpanel" aria-labelledby="tab-desc-link">
+          {% if product.description %}
+            <div class="product-description">
+              {{ product.description | raw }}
+            </div>
+          {% else %}
+            <p class="text-muted">{{ 'product.no_description' | t | default('No description available.') }}</p>
+          {% endif %}
+        </div>
+
+        {# Reviews tab #}
+        <div class="tab-pane fade" id="tab-reviews" role="tabpanel" aria-labelledby="tab-rev-link">
+          {% set _reviews = product.reviews | default([]) %}
+          {% if _reviews | length > 0 %}
+            <div class="reviews-list">
+              {% for review in _reviews %}
+                <div class="review-item d-flex mb-4 pb-4 border-bottom">
+                  <div class="review-avatar rounded-circle mr-3 d-flex align-items-center justify-content-center"
+                       style="width:48px; height:48px; background:var(--color-primary-50); flex-shrink:0;">
+                    <i class="fa fa-user text-primary" aria-hidden="true"></i>
+                  </div>
+                  <div class="flex-fill">
+                    <div class="d-flex align-items-center justify-content-between mb-1">
+                      <strong class="review-author">{{ review.author }}</strong>
+                      {% if review.date is defined %}
+                        <small class="text-muted">{{ review.date | date('d M Y') }}</small>
+                      {% endif %}
+                    </div>
+                    <div class="product-rating mb-2" aria-label="{{ review.rating }}/5">
+                      {% for i in 1..5 %}
+                        <i class="fa fa-star{% if i > review.rating %} is-empty{% endif %}" aria-hidden="true"></i>
+                      {% endfor %}
+                    </div>
+                    <p class="mb-0 review-content">{{ review.content }}</p>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="text-center py-4">
+              <i class="fa fa-star fa-2x text-muted mb-3 d-block" aria-hidden="true"></i>
+              <p class="text-muted mb-0">{{ 'product.no_reviews' | t | default('No reviews yet. Be the first to review this product.') }}</p>
+            </div>
+          {% endif %}
+        </div>
+
+        {# Specifications tab (optional) #}
+        {% if product.specifications is defined and product.specifications | length %}
+          <div class="tab-pane fade" id="tab-specs" role="tabpanel" aria-labelledby="tab-spec-link">
+            <table class="table table-sm table-bordered product-specs-table">
+              <tbody>
+                {% for spec in product.specifications %}
+                  <tr>
+                    <th class="text-muted font-weight-medium" style="width:35%;">{{ spec.name }}</th>
+                    <td>{{ spec.value }}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% endif %}
+
+      </div>
+    </div>
+  </div>
+
+  {# ─── Related Products ───────────────────────────────────────────────────── #}
+  {% set _related = product.related_products | default([]) %}
+  {% if _related | length > 0 %}
+    <section class="related-products mt-5" aria-label="{{ 'product.related' | t | default('Related Products') }}">
+      <header class="section-title mb-4 position-relative text-uppercase">
+        <span class="section-title__text bg-white pr-3">
+          {{ 'product.related' | t | default('You May Also Like') }}
+        </span>
+        <span class="section-title__rule" aria-hidden="true"></span>
+      </header>
+      <div class="row">
+        {% for related in _related | slice(0, 4) %}
+          <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+            {% set product = related %}
+            {% include 'components/product/card.twig' ignore missing %}
+          </div>
+        {% endfor %}
+      </div>
+    </section>
+  {% endif %}
+
+</div>{# /#product-page #}
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ 'js/product.js' | asset }}"></script>
+{% endblock %}

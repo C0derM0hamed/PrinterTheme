@@ -1,0 +1,27 @@
+{#
+  Home page (index)
+  -----------------
+  Composed of small, focused partials so the merchant can re-order or remove
+  individual sections from the theme dashboard. Twilight maps this template
+  to the storefront root URL.
+#}
+{% extends 'layouts/master.twig' %}
+
+{% block title %}{{ store.name }}{% endblock %}
+{% block description %}{{ store.description | default(store.name) }}{% endblock %}
+
+{% block content %}
+
+  {% if theme.settings.get('show_hero_slider') is not same as(false) %}
+    {% include 'components/home/hero.twig' ignore missing %}
+  {% endif %}
+
+  {% include 'components/home/features.twig' ignore missing %}
+
+  {% include 'components/home/categories-grid.twig' ignore missing %}
+
+  {% include 'components/home/featured-products.twig' ignore missing %}
+
+  {% include 'components/home/latest-products.twig' ignore missing %}
+
+{% endblock %}

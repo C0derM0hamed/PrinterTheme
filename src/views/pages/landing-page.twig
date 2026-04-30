@@ -1,0 +1,156 @@
+{% extends 'layouts/master.twig' %}
+
+{#
+  Landing Page — multipurpose campaign/promo page.
+  Content blocks are driven by twilight.json component fields.
+  Each section can be individually shown/hidden via theme settings.
+#}
+
+{% block title %}{{ landing.title | default(store.name) }} — {{ store.name }}{% endblock %}
+{% block description %}{{ landing.meta_description | default(store.description) }}{% endblock %}
+
+{% block head %}
+  {{ parent() }}
+  {# Suppress standard nav from appearing prominent on campaign pages #}
+  <style>.site-header__nav { display: none !important; }</style>
+{% endblock %}
+
+{% block content %}
+
+{# ─── Hero ─────────────────────────────────────────────────────────────────────── #}
+<section class="landing-hero position-relative overflow-hidden"
+         style="background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%); min-height: 560px;">
+
+  {% if landing.hero_bg %}
+    <div class="landing-hero__bg-img position-absolute inset-0"
+         style="background-image:url('{{ landing.hero_bg }}');background-size:cover;background-position:center;opacity:0.15;"></div>
+  {% endif %}
+
+  <div class="container-fluid px-xl-5 py-6 position-relative text-white text-center" style="z-index:1;">
+    {% if landing.eyebrow %}
+      <p class="landing-hero__eyebrow small font-weight-600 text-uppercase letter-spacing-2 mb-3 opacity-80">
+        {{ landing.eyebrow }}
+      </p>
+    {% endif %}
+    <h1 class="landing-hero__title display-4 font-weight-700 mb-3">
+      {{ landing.headline | default('Professional Printing, Delivered Fast') }}
+    </h1>
+    <p class="landing-hero__sub lead mb-5 mx-auto" style="max-width:600px;">
+      {{ landing.subheadline | default('Upload your design, choose your specs, and get print-ready products at your door.') }}
+    </p>
+    <div class="landing-hero__ctas">
+      <a href="{{ landing.cta_url | default('/products') }}"
+         class="btn btn-light btn-lg font-weight-600 mr-3 mb-2">
+        {{ landing.cta_label | default('Order Now') }}
+      </a>
+      {% if landing.secondary_cta_url %}
+        <a href="{{ landing.secondary_cta_url }}"
+           class="btn btn-outline-light btn-lg mb-2">
+          {{ landing.secondary_cta_label | default('Learn More') }}
+        </a>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+{# ─── Trust bar ────────────────────────────────────────────────────────────────── #}
+<div class="landing-trust py-4 bg-white border-bottom">
+  <div class="container-fluid px-xl-5">
+    <div class="row text-center">
+      <div class="col-6 col-md-3 mb-3 mb-md-0">
+        <i class="fa fa-truck fa-2x text-primary mb-2" aria-hidden="true"></i>
+        <p class="small font-weight-600 mb-0">{{ 'landing.trust_fast' | t | default('Fast Delivery') }}</p>
+      </div>
+      <div class="col-6 col-md-3 mb-3 mb-md-0">
+        <i class="fa fa-upload fa-2x text-primary mb-2" aria-hidden="true"></i>
+        <p class="small font-weight-600 mb-0">{{ 'landing.trust_upload' | t | default('Easy File Upload') }}</p>
+      </div>
+      <div class="col-6 col-md-3">
+        <i class="fa fa-palette fa-2x text-primary mb-2" aria-hidden="true"></i>
+        <p class="small font-weight-600 mb-0">{{ 'landing.trust_quality' | t | default('Premium Quality') }}</p>
+      </div>
+      <div class="col-6 col-md-3">
+        <i class="fa fa-headset fa-2x text-primary mb-2" aria-hidden="true"></i>
+        <p class="small font-weight-600 mb-0">{{ 'landing.trust_support' | t | default('Expert Support') }}</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+{# ─── Featured products ────────────────────────────────────────────────────────── #}
+{% if products is defined and products | length > 0 %}
+  <section class="landing-products py-6">
+    <div class="container-fluid px-xl-5">
+      <div class="section-head text-center mb-5">
+        <p class="section-head__eyebrow">{{ landing.products_eyebrow | default('Popular Services') }}</p>
+        <h2 class="section-head__title">{{ landing.products_heading | default('What We Print') }}</h2>
+      </div>
+      <div class="row">
+        {% for product in products | slice(0, 8) %}
+          <div class="col-6 col-md-4 col-lg-3 mb-4">
+            {% include 'components/product/card.twig' with { product: product } %}
+          </div>
+        {% endfor %}
+      </div>
+      <div class="text-center mt-4">
+        <a href="/products" class="btn btn-primary btn-lg">
+          {{ landing.products_cta | default('View All Products') }}
+        </a>
+      </div>
+    </div>
+  </section>
+{% endif %}
+
+{# ─── Quote CTA band ──────────────────────────────────────────────────────────── #}
+<section class="landing-cta-band py-6 text-center text-white"
+         style="background: var(--color-accent);">
+  <div class="container-fluid px-xl-5">
+    <h2 class="landing-cta-band__title h2 font-weight-700 mb-3">
+      {{ landing.band_headline | default('Ready to Print?') }}
+    </h2>
+    <p class="landing-cta-band__body lead mb-5">
+      {{ landing.band_body | default('Get an instant quote in minutes. Upload your design and see your price.') }}
+    </p>
+    <a href="{{ landing.band_cta_url | default('/products') }}"
+       class="btn btn-light btn-lg font-weight-600">
+      {{ landing.band_cta_label | default('Get a Quote') }}
+    </a>
+  </div>
+</section>
+
+{# ─── Testimonials ────────────────────────────────────────────────────────────── #}
+{% if landing.testimonials is defined and landing.testimonials | length > 0 %}
+  <section class="landing-testimonials py-6 bg-light">
+    <div class="container-fluid px-xl-5">
+      <h2 class="section-head__title text-center mb-5">{{ landing.testimonials_heading | default('What Our Customers Say') }}</h2>
+      <div class="row justify-content-center">
+        {% for t in landing.testimonials %}
+          <div class="col-md-4 mb-4">
+            <div class="testimonial-card card border-0 shadow-sm rounded-12 p-4 h-100">
+              <div class="testimonial-card__stars mb-2">
+                {% for i in 1..5 %}
+                  <i class="fa fa-star {% if i <= t.rating | default(5) %}text-warning{% else %}text-muted{% endif %}" aria-hidden="true"></i>
+                {% endfor %}
+              </div>
+              <p class="testimonial-card__body text-muted flex-grow-1 mb-3">"{{ t.body }}"</p>
+              <div class="testimonial-card__author font-weight-600 small">— {{ t.name }}</div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+{% endif %}
+
+{# ─── Final CTA ───────────────────────────────────────────────────────────────── #}
+<section class="landing-final-cta py-6 text-center">
+  <div class="container-fluid px-xl-5">
+    <h2 class="h2 font-weight-700 mb-3">{{ 'landing.final_cta_title' | t | default('Start Your Print Order Today') }}</h2>
+    <a href="{{ landing.cta_url | default('/products') }}"
+       class="btn btn-primary btn-lg">
+      {{ landing.cta_label | default('Shop Now') }}
+    </a>
+  </div>
+</section>
+
+{% endblock %}

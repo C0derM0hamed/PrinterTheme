@@ -1,0 +1,55 @@
+{#
+  Features strip
+  --------------
+  4 trust signals beneath the hero. The icon classes and labels stay as
+  Font Awesome utility classes so merchants can change wording from the
+  locale files without touching markup.
+#}
+
+<section class="section section--tight" aria-label="{{ 'features.title' | t | default('Why choose us') }}">
+  <div class="container-fluid">
+    <div class="features-strip">
+
+      <div class="feature">
+        <div class="feature__icon">
+          <i class="fa fa-medal" aria-hidden="true"></i>
+        </div>
+        <div>
+          <h6 class="feature__title">{{ 'features.quality' | t | default('Premium quality') }}</h6>
+          <p class="feature__desc">{{ 'features.quality_desc' | t | default('Mill-fresh paper, calibrated colour, sharp finishing.') }}</p>
+        </div>
+      </div>
+
+      <div class="feature">
+        <div class="feature__icon">
+          <i class="fa fa-shipping-fast" aria-hidden="true"></i>
+        </div>
+        <div>
+          <h6 class="feature__title">{{ 'features.delivery' | t | default('Fast delivery') }}</h6>
+          <p class="feature__desc">{{ 'features.delivery_desc' | t | default('Production in 24h, doorstep delivery in days.') }}</p>
+        </div>
+      </div>
+
+      <div class="feature">
+        <div class="feature__icon">
+          <i class="fa fa-undo-alt" aria-hidden="true"></i>
+        </div>
+        <div>
+          <h6 class="feature__title">{{ 'features.returns' | t | default('Easy returns') }}</h6>
+          <p class="feature__desc">{{ 'features.returns_desc' | t | default('Defects re-printed for free, no questions asked.') }}</p>
+        </div>
+      </div>
+
+      <div class="feature">
+        <div class="feature__icon">
+          <i class="fa fa-headset" aria-hidden="true"></i>
+        </div>
+        <div>
+          <h6 class="feature__title">{{ 'features.support' | t | default('Expert support') }}</h6>
+          <p class="feature__desc">{{ 'features.support_desc' | t | default('Real designers on chat to validate every file.') }}</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>

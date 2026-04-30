@@ -1,0 +1,68 @@
+{% extends 'layouts/master.twig' %}
+
+{% block title %}{{ brand.name }} — {{ store.name }}{% endblock %}
+{% block description %}{{ 'brands.single_meta' | t({ brand: brand.name }) | default('Browse ' ~ brand.name ~ ' products.') }}{% endblock %}
+
+{% block content %}
+
+<nav class="breadcrumb-bar" aria-label="{{ 'nav.breadcrumb' | t | default('Breadcrumb') }}">
+  <div class="container-fluid px-xl-5">
+    <ol class="breadcrumb mb-0 py-3">
+      <li class="breadcrumb-item"><a href="{{ store.url }}">{{ 'nav.home' | t | default('Home') }}</a></li>
+      <li class="breadcrumb-item"><a href="/brands">{{ 'brands.title' | t | default('Brands') }}</a></li>
+      <li class="breadcrumb-item active" aria-current="page">{{ brand.name }}</li>
+    </ol>
+  </div>
+</nav>
+
+<div class="container-fluid px-xl-5 py-5">
+
+  {# Brand hero #}
+  <div class="brand-hero text-center mb-5">
+    {% if brand.logo %}
+      <img src="{{ brand.logo }}" alt="{{ brand.name }}" class="brand-hero__logo mb-3" style="max-height:100px;object-fit:contain;">
+    {% endif %}
+    <h1 class="brand-hero__name h2 font-weight-700">{{ brand.name }}</h1>
+    {% if brand.description %}
+      <p class="text-muted mt-2">{{ brand.description }}</p>
+    {% endif %}
+  </div>
+
+  {# Products grid #}
+  {% if products is defined and products | length > 0 %}
+    <div class="row">
+      {% for product in products %}
+        <div class="col-6 col-md-4 col-lg-3 mb-4">
+          {% include 'components/product/card.twig' with { product: product } %}
+        </div>
+      {% endfor %}
+    </div>
+
+    {# Pagination #}
+    {% if pagination is defined and pagination.last_page > 1 %}
+      <nav class="mt-4" aria-label="{{ 'common.pagination' | t | default('Pagination') }}">
+        <ul class="pagination justify-content-center">
+          {% if pagination.current_page > 1 %}
+            <li class="page-item"><a class="page-link" href="?page={{ pagination.current_page - 1 }}"><i class="fa fa-chevron-left" aria-hidden="true"></i></a></li>
+          {% endif %}
+          {% for p in 1..pagination.last_page %}
+            <li class="page-item {% if p == pagination.current_page %}active{% endif %}"><a class="page-link" href="?page={{ p }}">{{ p }}</a></li>
+          {% endfor %}
+          {% if pagination.current_page < pagination.last_page %}
+            <li class="page-item"><a class="page-link" href="?page={{ pagination.current_page + 1 }}"><i class="fa fa-chevron-right" aria-hidden="true"></i></a></li>
+          {% endif %}
+        </ul>
+      </nav>
+    {% endif %}
+  {% else %}
+    <div class="empty-state text-center py-6">
+      <div class="empty-state__icon"><i class="fa fa-box-open" aria-hidden="true"></i></div>
+      <h2 class="empty-state__title">{{ 'brands.no_products_title' | t | default('No products found') }}</h2>
+      <p class="empty-state__body">{{ 'brands.no_products_body' | t({ brand: brand.name }) | default('No products available for this brand yet.') }}</p>
+      <a href="/products" class="btn btn-primary mt-3">{{ 'nav.shop' | t | default('Browse Shop') }}</a>
+    </div>
+  {% endif %}
+
+</div>
+
+{% endblock %}

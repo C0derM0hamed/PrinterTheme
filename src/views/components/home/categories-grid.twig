@@ -1,0 +1,42 @@
+{#
+  Categories grid
+  ---------------
+  Six top-level categories rendered as circular icon tiles. Falls back to
+  Salla's `<salla-categories-list>` web component when the `categories`
+  Twig variable isn't populated by the merchant's data.
+#}
+
+{% set _cats = categories | default([]) %}
+
+<section class="section" aria-label="{{ 'categories.title' | t | default('Categories') }}">
+  <div class="container-fluid">
+
+    <header class="section-title">
+      <span class="eyebrow">{{ 'categories.eyebrow' | t | default('Browse by service') }}</span>
+      <h2>{{ 'categories.title' | t | default('Our Categories') }}</h2>
+      <span class="section-title__rule" aria-hidden="true"></span>
+      <p>{{ 'categories.subtitle' | t | default('Find the right print service in seconds.') }}</p>
+    </header>
+
+    {% if _cats | length > 0 %}
+      <div class="cat-grid">
+        {% for category in _cats | slice(0, 12) %}
+          <a class="cat-tile" href="{{ category.url }}">
+            <span class="cat-tile__icon">
+              {% if category.image %}
+                <img src="{{ category.image | image_resize(60, 60) }}" alt="" aria-hidden="true">
+              {% else %}
+                <i class="fa fa-print" aria-hidden="true"></i>
+              {% endif %}
+            </span>
+            <h6 class="cat-tile__name">{{ category.name }}</h6>
+          </a>
+        {% endfor %}
+      </div>
+    {% else %}
+      {# Salla web component fallback — renders directly from the store catalogue. #}
+      <salla-categories-list limit="12" class="cat-grid"></salla-categories-list>
+    {% endif %}
+
+  </div>
+</section>

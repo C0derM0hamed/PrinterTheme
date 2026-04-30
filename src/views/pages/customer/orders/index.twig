@@ -1,0 +1,121 @@
+{% extends 'layouts/master.twig' %}
+
+{% block title %}{{ 'account.orders' | t | default('My Orders') }} — {{ store.name }}{% endblock %}
+
+{% block content %}
+
+<nav class="breadcrumb-bar" aria-label="{{ 'nav.breadcrumb' | t | default('Breadcrumb') }}">
+  <div class="container-fluid px-xl-5">
+    <ol class="breadcrumb mb-0 py-3">
+      <li class="breadcrumb-item"><a href="{{ store.url }}">{{ 'nav.home' | t | default('Home') }}</a></li>
+      <li class="breadcrumb-item active" aria-current="page">{{ 'account.orders' | t | default('My Orders') }}</li>
+    </ol>
+  </div>
+</nav>
+
+<div class="container-fluid px-xl-5 py-5">
+  <div class="row">
+
+    <div class="col-lg-3 mb-4 mb-lg-0">
+      <div class="account-sidebar card border-0 shadow-sm rounded-12">
+        <div class="card-body p-0">
+          <nav class="account-sidebar__nav">
+            <a href="/profile"       class="account-sidebar__link"><i class="fa fa-user mr-2" aria-hidden="true"></i>{{ 'account.profile' | t | default('Profile') }}</a>
+            <a href="/orders"        class="account-sidebar__link is-active"><i class="fa fa-box mr-2" aria-hidden="true"></i>{{ 'account.orders' | t | default('Orders') }}</a>
+            <a href="/wishlist"      class="account-sidebar__link"><i class="fa fa-heart mr-2" aria-hidden="true"></i>{{ 'wishlist.title' | t | default('Wishlist') }}</a>
+            <a href="/notifications" class="account-sidebar__link"><i class="fa fa-bell mr-2" aria-hidden="true"></i>{{ 'account.notifications' | t | default('Notifications') }}</a>
+            <a href="/logout"        class="account-sidebar__link account-sidebar__link--danger"><i class="fa fa-sign-out-alt mr-2" aria-hidden="true"></i>{{ 'auth.logout' | t | default('Logout') }}</a>
+          </nav>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-9">
+      <h1 class="h4 mb-4 font-weight-600">{{ 'account.orders' | t | default('My Orders') }}</h1>
+
+      {% if orders is defined and orders | length > 0 %}
+        <div class="orders-list">
+          {% for order in orders %}
+            <div class="order-card card border-0 shadow-sm rounded-12 mb-3">
+              <div class="card-body p-4">
+                <div class="d-flex flex-wrap justify-content-between align-items-start mb-3">
+                  <div>
+                    <span class="font-weight-600">{{ 'order.reference_label' | t | default('Order #') }}{{ order.reference_id }}</span>
+                    <span class="text-muted small ml-3">{{ order.created_at | date('d M Y') }}</span>
+                  </div>
+                  <span class="badge order-status order-status--{{ order.status | lower | replace({' ': '-'}) }}">
+                    {{ order.status_name | default(order.status) }}
+                  </span>
+                </div>
+
+                <div class="order-card__preview d-flex flex-wrap mb-3">
+                  {% for item in order.products | slice(0, 3) %}
+                    <div class="order-card__thumb mr-2">
+                      {% if item.image %}
+                        <img src="{{ item.image | image_resize(56, 56) }}" alt="{{ item.name }}" loading="lazy" width="56" height="56" class="rounded">
+                      {% else %}
+                        <div class="order-card__thumb-placeholder rounded"><i class="fa fa-print" aria-hidden="true"></i></div>
+                      {% endif %}
+                    </div>
+                  {% endfor %}
+                  {% if order.products | length > 3 %}
+                    <div class="order-card__more">+{{ order.products | length - 3 }}</div>
+                  {% endif %}
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center">
+                  <span class="font-weight-600">{{ order.amount | money }}</span>
+                  <a href="/orders/{{ order.id }}" class="btn btn-sm btn-outline-primary">
+                    {{ 'order.view_order' | t | default('View Details') }}
+                  </a>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+
+        {# Pagination #}
+        {% if pagination is defined and pagination.last_page > 1 %}
+          <nav class="mt-4" aria-label="{{ 'common.pagination' | t | default('Pagination') }}">
+            <ul class="pagination justify-content-center">
+              {% if pagination.current_page > 1 %}
+                <li class="page-item">
+                  <a class="page-link" href="?page={{ pagination.current_page - 1 }}">
+                    <i class="fa fa-chevron-left" aria-hidden="true"></i>
+                  </a>
+                </li>
+              {% endif %}
+              {% for p in 1..pagination.last_page %}
+                <li class="page-item {% if p == pagination.current_page %}active{% endif %}">
+                  <a class="page-link" href="?page={{ p }}">{{ p }}</a>
+                </li>
+              {% endfor %}
+              {% if pagination.current_page < pagination.last_page %}
+                <li class="page-item">
+                  <a class="page-link" href="?page={{ pagination.current_page + 1 }}">
+                    <i class="fa fa-chevron-right" aria-hidden="true"></i>
+                  </a>
+                </li>
+              {% endif %}
+            </ul>
+          </nav>
+        {% endif %}
+
+      {% else %}
+        <div class="empty-state text-center py-6">
+          <div class="empty-state__icon">
+            <i class="fa fa-box-open" aria-hidden="true"></i>
+          </div>
+          <h2 class="empty-state__title">{{ 'order.no_orders_title' | t | default('No orders yet') }}</h2>
+          <p class="empty-state__body">{{ 'order.no_orders_body' | t | default('Your print orders will appear here.') }}</p>
+          <a href="/products" class="btn btn-primary btn-lg mt-3">
+            {{ 'cart.start_shopping' | t | default('Start Shopping') }}
+          </a>
+        </div>
+      {% endif %}
+
+    </div>
+  </div>
+</div>
+
+{% endblock %}

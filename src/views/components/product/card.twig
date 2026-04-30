@@ -1,0 +1,115 @@
+{#
+  Product Card — components/product/card.twig
+  -------------------------------------------
+  Reusable card for category grids, search results, home sections, and
+  related-products rows.  Expects `product` to be in scope.
+
+  Features:
+  - Lazy-loaded image with aspect-ratio padding so the layout never jumps.
+  - Sale badge (from MD) + NEW badge when product.is_new.
+  - Hover action bar with View + Order CTAs (slides up from bottom).
+  - Image zoom on hover (600ms ease, matches MD spec).
+  - Rating row with filled/empty stars and review count.
+  - Price row: sale price highlighted + old price struck through.
+  - Wishlist button (heart icon) top-right corner.
+  - RTL-safe via [dir="rtl"] overrides in main.css.
+  - Accessible: img alt, role="article", focus-visible on interactive elements.
+#}
+
+<article class="product-item" role="article" aria-label="{{ product.name }}">
+
+  {# ─── Image wrapper ─────────────────────────────────────────── #}
+  <div class="product-img position-relative overflow-hidden">
+
+    <a href="{{ product.url }}" tabindex="-1" aria-hidden="true">
+      <img
+        class="img-fluid w-100 product-img__photo"
+        src="{{ product.thumbnail | image_resize(360, 360) }}"
+        alt="{{ product.name }}"
+        loading="lazy"
+        width="360"
+        height="360">
+    </a>
+
+    {# Badges (sale / new) #}
+    {% if product.on_sale %}
+      <span class="product-badge product-badge--sale">{{ 'product.sale' | t | default('Sale') }}</span>
+    {% elseif product.is_new | default(false) %}
+      <span class="product-badge product-badge--new">{{ 'product.new' | t | default('New') }}</span>
+    {% endif %}
+
+    {# Wishlist toggle — top-right corner #}
+    <button
+      class="product-wishlist-btn"
+      data-product-id="{{ product.id }}"
+      aria-label="{{ 'product.add_to_wishlist' | t | default('Add to wishlist') }}"
+      type="button">
+      <i class="fa fa-heart{% if product.in_wishlist | default(false) %}{% else %}-o{% endif %}" aria-hidden="true"></i>
+    </button>
+
+    {# Hover action bar #}
+    <div class="product-action" aria-hidden="true">
+      <a href="{{ product.url }}" class="btn btn-outline-light btn-action-view" tabindex="-1">
+        <i class="fa fa-eye" aria-hidden="true"></i>
+        <span class="btn-label">{{ 'product.view' | t | default('View') }}</span>
+      </a>
+      <a href="{{ product.url }}" class="btn btn-primary btn-action-cart" tabindex="-1">
+        <i class="fa fa-shopping-bag" aria-hidden="true"></i>
+        <span class="btn-label">{{ 'product.order' | t | default('Order') }}</span>
+      </a>
+    </div>
+
+  </div>{# /.product-img #}
+
+  {# ─── Card body ─────────────────────────────────────────────── #}
+  <div class="product-body">
+
+    {# Category label (optional, when category is present on the product object) #}
+    {% if product.category is defined and product.category %}
+      <span class="product-category">{{ product.category.name }}</span>
+    {% endif %}
+
+    <a class="product-title" href="{{ product.url }}">{{ product.name }}</a>
+
+    {# Rating row #}
+    {% if product.rating is defined and product.rating %}
+      <div class="product-rating" aria-label="{{ product.rating }}/5 {{ 'product.stars' | t | default('stars') }}">
+        {% for i in 1..5 %}
+          <i class="fa fa-star{% if i > product.rating %} is-empty{% endif %}" aria-hidden="true"></i>
+        {% endfor %}
+        <span class="product-rating__count">({{ product.reviews_count | default(0) }})</span>
+      </div>
+    {% endif %}
+
+    {# Price row #}
+    <div class="product-price">
+      {% if product.on_sale %}
+        <span class="product-price__sale">{{ product.sale_price | money }}</span>
+        <span class="product-price__old"><del>{{ product.price | money }}</del></span>
+        {% set _pct = ((product.price - product.sale_price) / product.price * 100) | round %}
+        {% if _pct > 0 %}
+          <span class="product-price__pct">-{{ _pct }}%</span>
+        {% endif %}
+      {% else %}
+        <span class="product-price__regular">{{ product.price | money }}</span>
+      {% endif %}
+    </div>
+
+    {# Availability indicator #}
+    {% if product.quantity is defined %}
+      {% if product.quantity > 0 %}
+        <span class="product-stock product-stock--in">
+          <i class="fa fa-check-circle" aria-hidden="true"></i>
+          {{ 'product.in_stock' | t | default('In Stock') }}
+        </span>
+      {% else %}
+        <span class="product-stock product-stock--out">
+          <i class="fa fa-times-circle" aria-hidden="true"></i>
+          {{ 'product.out_of_stock' | t | default('Out of Stock') }}
+        </span>
+      {% endif %}
+    {% endif %}
+
+  </div>{# /.product-body #}
+
+</article>

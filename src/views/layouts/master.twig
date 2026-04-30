@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="{{ store.language }}" dir="{{ store.direction }}">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="theme-color" content="{{ theme.settings.get('primary_color') | default('#0d6efd') }}">
+  <meta name="format-detection" content="telephone=no">
+
+  {% block head %}
+    <title>{% block title %}{{ store.name }}{% endblock %}</title>
+    <meta name="description" content="{% block description %}{{ store.description }}{% endblock %}">
+
+    {# Open Graph defaults — page templates may override via the title/description blocks. #}
+    <meta property="og:site_name" content="{{ store.name }}">
+    <meta property="og:title" content="{{ block('title') }}">
+    <meta property="og:description" content="{{ block('description') }}">
+    <meta property="og:type" content="website">
+    {% if store.logo %}<meta property="og:image" content="{{ store.logo }}">{% endif %}
+    <meta name="twitter:card" content="summary_large_image">
+
+    {# Salla head hook — must run before our stylesheet so injected meta/JSON-LD render in order. #}
+    {{ salla.head() }}
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="dns-prefetch" href="https://stackpath.bootstrapcdn.com">
+    <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+
+    {# Fonts: load only the selected family for a smaller payload. Defaults to Poppins. #}
+    {% set _font = theme.settings.get('font_family') | default('Poppins') %}
+    {% if _font == 'Cairo' %}
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&display=swap">
+    {% elseif _font == 'Tajawal' %}
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap">
+    {% else %}
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
+    {% endif %}
+
+    {# Bootstrap 4 + Font Awesome 6 (with v4 shims so legacy `fa fa-*` classes keep working). #}
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/v4-shims.min.css">
+
+    <link rel="stylesheet" href="{{ 'styles/main.css' | asset }}">
+
+    <link rel="icon" type="image/x-icon" href="{{ store.favicon | default(store.logo) }}">
+    <link rel="apple-touch-icon" href="{{ store.favicon | default(store.logo) }}">
+
+    {# Theme tokens piped from twilight.json settings — the bulk of styling lives in main.css. #}
+    <style id="theme-tokens">
+      :root {
+        --color-primary: {{ theme.settings.get('primary_color') | default('#0d6efd') }};
+        --color-accent: {{ theme.settings.get('accent_color') | default('#ff6b4a') }};
+        --font-family-base: '{{ _font }}', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      }
+    </style>
+  {% endblock %}
+</head>
+<body class="theme-printer" data-direction="{{ store.direction }}" data-locale="{{ store.language }}">
+
+  <a href="#main-content" class="skip-link sr-only sr-only-focusable">{{ 'common.skip_to_content' | t | default('Skip to content') }}</a>
+
+  {% include 'components/header/header.twig' ignore missing %}
+
+  <main id="main-content" class="theme-main" tabindex="-1">
+    {% block content %}{% endblock %}
+  </main>
+
+  {% include 'components/footer/footer.twig' ignore missing %}
+
+  <a href="#" class="btn back-to-top" aria-label="{{ 'common.back_to_top' | t | default('Back to top') }}">
+    <i class="fa fa-angle-double-up" aria-hidden="true"></i>
+  </a>
+
+  {% set _wa = theme.settings.get('whatsapp_phone') %}
+  {% if _wa %}
+    <a href="https://wa.me/{{ _wa }}"
+       class="wa-fab"
+       target="_blank"
+       rel="noopener"
+       aria-label="WhatsApp">
+      <i class="fa-brands fa-whatsapp" aria-hidden="true"></i>
+    </a>
+  {% endif %}
+
+  <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+  <script src="{{ 'js/theme.js' | asset }}"></script>
+
+  {{ salla.footer() }}
+
+  {% block scripts %}{% endblock %}
+</body>
+</html>

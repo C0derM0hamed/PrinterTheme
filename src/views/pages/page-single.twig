@@ -1,0 +1,86 @@
+{% extends 'layouts/master.twig' %}
+
+{% block title %}{{ page.title }} — {{ store.name }}{% endblock %}
+{% block description %}{{ page.excerpt | default(page.content | striptags | slice(0, 160)) }}{% endblock %}
+
+{% block head %}
+  {{ parent() }}
+  {% if page.image %}
+    <meta property="og:image" content="{{ page.image }}">
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+
+{# ─── Breadcrumb ────────────────────────────────────────────────────────────── #}
+<nav class="breadcrumb-bar" aria-label="{{ 'nav.breadcrumb' | t | default('Breadcrumb') }}">
+  <div class="container-fluid px-xl-5">
+    <ol class="breadcrumb mb-0 py-3">
+      <li class="breadcrumb-item"><a href="{{ store.url }}">{{ 'nav.home' | t | default('Home') }}</a></li>
+      <li class="breadcrumb-item active" aria-current="page">{{ page.title }}</li>
+    </ol>
+  </div>
+</nav>
+
+{# ─── Page content ───────────────────────────────────────────────────────────── #}
+<div class="container-fluid px-xl-5 py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8 col-xl-7">
+
+      {# Hero image #}
+      {% if page.image %}
+        <div class="page-single__hero mb-4 rounded-12 overflow-hidden">
+          <img src="{{ page.image }}"
+               alt="{{ page.title }}"
+               class="img-fluid w-100"
+               loading="eager"
+               style="max-height:420px;object-fit:cover;">
+        </div>
+      {% endif %}
+
+      {# Title #}
+      <h1 class="page-single__title mb-3">{{ page.title }}</h1>
+
+      {# Meta: published date #}
+      {% if page.published_at is defined %}
+        <p class="page-single__date text-muted small mb-4">
+          <i class="fa fa-calendar-alt mr-1" aria-hidden="true"></i>
+          {{ page.published_at | date('d M Y') }}
+        </p>
+      {% endif %}
+
+      <hr class="page-single__divider mb-4">
+
+      {# Body content — rendered from Salla's page.content #}
+      <div class="page-single__body prose">
+        {{ page.content | raw }}
+      </div>
+
+      {# Share links #}
+      <div class="page-single__share mt-5 pt-4 border-top">
+        <span class="text-muted small mr-3">{{ 'common.share' | t | default('Share:') }}</span>
+        <a href="https://twitter.com/intent/tweet?url={{ page.url | url_encode }}&text={{ page.title | url_encode }}"
+           target="_blank" rel="noopener"
+           class="btn btn-sm btn-outline-secondary mr-2"
+           aria-label="Twitter">
+          <i class="fa-brands fa-twitter" aria-hidden="true"></i>
+        </a>
+        <a href="https://www.facebook.com/sharer/sharer.php?u={{ page.url | url_encode }}"
+           target="_blank" rel="noopener"
+           class="btn btn-sm btn-outline-secondary mr-2"
+           aria-label="Facebook">
+          <i class="fa-brands fa-facebook-f" aria-hidden="true"></i>
+        </a>
+        <a href="https://wa.me/?text={{ page.title | url_encode }}%20{{ page.url | url_encode }}"
+           target="_blank" rel="noopener"
+           class="btn btn-sm btn-outline-secondary"
+           aria-label="WhatsApp">
+          <i class="fa-brands fa-whatsapp" aria-hidden="true"></i>
+        </a>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+{% endblock %}

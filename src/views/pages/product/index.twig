@@ -1,0 +1,439 @@
+{% extends 'layouts/master.twig' %}
+
+{#
+  Product Index — src/views/pages/product/index.twig
+  ---------------------------------------------------
+  Handles two Salla routes via the same template:
+    • /products (or /category/:slug)  — category browsing
+    • /search?q=...                   — keyword search results
+
+  When `request.q` is present the search-results header is shown instead
+  of the category breadcrumb/title.  Sidebar filters and the sort toolbar
+  work the same way in both modes.
+
+  Features:
+  - Breadcrumb (category mode) / search-query header (search mode).
+  - Sidebar: category tree list, price-range form, optional tag cloud.
+  - Toolbar: results count, per-row selector (reads products_per_row setting),
+    sort select.
+  - Responsive grid with Bootstrap column classes driven by products_per_row.
+  - Collapsible sidebar on mobile (toggle button).
+  - Pagination with smart page-range.
+  - Empty-state illustration with CTAs for both search and category views.
+#}
+
+{% set _is_search   = request.q is not empty %}
+{% set _query       = request.q | default('') %}
+{% set _per_row     = theme.settings.get('products_per_row') | default('3') | number_format %}
+{% set _col_class   = _per_row == 4 ? 'col-lg-3 col-md-4 col-sm-6'
+                      : (_per_row == 2 ? 'col-lg-6 col-sm-6'
+                      : 'col-lg-4 col-md-6 col-sm-6') %}
+
+{# Page title #}
+{% block title %}
+  {% if _is_search %}
+    {{ 'search.results_for' | t | default('Results for') }}: "{{ _query }}" — {{ store.name }}
+  {% else %}
+    {{ category.name | default('Products') }} — {{ store.name }}
+  {% endif %}
+{% endblock %}
+
+{% block description %}
+  {% if _is_search %}
+    {{ 'search.results_for' | t | default('Search results') }}: {{ _query }}
+  {% else %}
+    {{ category.description | default(store.description) | striptags | slice(0, 160) }}
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+
+{# ─── Breadcrumb (category mode) ────────────────────────────────────────────── #}
+{% if not _is_search %}
+  <nav class="breadcrumb-bar" aria-label="{{ 'nav.breadcrumb' | t | default('Breadcrumb') }}">
+    <div class="container-fluid px-xl-5">
+      <ol class="breadcrumb mb-0 py-3">
+        <li class="breadcrumb-item">
+          <a href="{{ store.url }}">{{ 'nav.home' | t | default('Home') }}</a>
+        </li>
+        {% if category.parent is defined and category.parent %}
+          <li class="breadcrumb-item">
+            <a href="{{ category.parent.url }}">{{ category.parent.name }}</a>
+          </li>
+        {% endif %}
+        <li class="breadcrumb-item active" aria-current="page">
+          {{ category.name | default('Products') }}
+        </li>
+      </ol>
+    </div>
+  </nav>
+{% endif %}
+
+<div class="container-fluid px-xl-5 pb-5 pt-3">
+
+  {# ─── Search header ──────────────────────────────────────────────────────── #}
+  {% if _is_search %}
+    <div class="search-header mb-4">
+      <h1 class="search-header__title h3">
+        {{ 'search.results_for' | t | default('Results for') }}:
+        <em class="search-header__query">&ldquo;{{ _query }}&rdquo;</em>
+      </h1>
+      <p class="search-header__count text-muted">
+        {{ products.total | default(0) }}
+        {{ 'products.found' | t | default('products found') }}
+      </p>
+    </div>
+  {% else %}
+    {# Category title + optional description #}
+    {% if category is defined and category %}
+      <div class="category-header mb-4">
+        {% if category.image is defined and category.image %}
+          <div class="category-header__banner mb-3 rounded overflow-hidden"
+               style="max-height:200px; background: var(--color-neutral-100);">
+            <img src="{{ category.image }}"
+                 alt="{{ category.name }}"
+                 class="img-fluid w-100"
+                 style="object-fit:cover; max-height:200px;"
+                 loading="lazy">
+          </div>
+        {% endif %}
+        <h1 class="category-header__title h2">{{ category.name }}</h1>
+        {% if category.description is defined and category.description %}
+          <p class="text-muted">{{ category.description | striptags }}</p>
+        {% endif %}
+      </div>
+    {% endif %}
+  {% endif %}
+
+  <div class="row">
+
+    {# ══════════════════════════════════════════════════════════════════
+       SIDEBAR
+       ══════════════════════════════════════════════════════════════════ #}
+
+    {# Mobile sidebar toggle #}
+    <div class="col-12 d-lg-none mb-3">
+      <button
+        class="btn btn-outline-secondary btn-sm w-100"
+        type="button"
+        data-toggle="collapse"
+        data-target="#sidebar-collapse"
+        aria-expanded="false"
+        aria-controls="sidebar-collapse">
+        <i class="fa fa-filter mr-2" aria-hidden="true"></i>
+        {{ 'filter.show_filters' | t | default('Filters') }}
+      </button>
+    </div>
+
+    <aside class="col-lg-3 col-md-4 mb-4 mb-lg-0" id="product-sidebar"
+           aria-label="{{ 'filter.sidebar' | t | default('Filters') }}">
+      <div class="collapse d-lg-block" id="sidebar-collapse">
+
+        {# ── Category list ──────────────────────────────────────────── #}
+        {% set _cats = categories | default([]) %}
+        {% if _cats | length > 0 %}
+          <div class="sidebar-widget card border-0 shadow-sm mb-4">
+            <div class="card-header bg-transparent border-bottom font-weight-semibold">
+              <i class="fa fa-th-list mr-2 text-primary" aria-hidden="true"></i>
+              {{ 'categories.title' | t | default('Categories') }}
+            </div>
+            <div class="card-body p-0">
+              <ul class="sidebar-category-list list-unstyled mb-0" role="list">
+                {% for cat in _cats %}
+                  <li class="sidebar-category-list__item{% if category is defined and cat.id == category.id %} is-active{% endif %}" role="listitem">
+                    <a href="{{ cat.url }}" class="sidebar-category-list__link d-flex justify-content-between align-items-center px-3 py-2">
+                      <span>{{ cat.name }}</span>
+                      <span class="badge badge-pill badge-light">{{ cat.products_count | default(0) }}</span>
+                    </a>
+                    {# Sub-categories (one level deep) #}
+                    {% if cat.children is defined and cat.children | length %}
+                      <ul class="sidebar-category-list sidebar-category-list--sub list-unstyled mb-0 ml-3">
+                        {% for sub in cat.children %}
+                          <li class="sidebar-category-list__item{% if category is defined and sub.id == category.id %} is-active{% endif %}">
+                            <a href="{{ sub.url }}" class="sidebar-category-list__link d-flex justify-content-between align-items-center px-3 py-2">
+                              <span>{{ sub.name }}</span>
+                              <span class="badge badge-pill badge-light">{{ sub.products_count | default(0) }}</span>
+                            </a>
+                          </li>
+                        {% endfor %}
+                      </ul>
+                    {% endif %}
+                  </li>
+                {% endfor %}
+              </ul>
+            </div>
+          </div>
+        {% endif %}
+
+        {# ── Price range ────────────────────────────────────────────── #}
+        <div class="sidebar-widget card border-0 shadow-sm mb-4">
+          <div class="card-header bg-transparent border-bottom font-weight-semibold">
+            <i class="fa fa-tag mr-2 text-primary" aria-hidden="true"></i>
+            {{ 'filter.price_range' | t | default('Price Range') }}
+          </div>
+          <div class="card-body">
+            <form action="" method="get" id="price-filter-form">
+              {# Preserve existing query params #}
+              {% if _is_search %}<input type="hidden" name="q" value="{{ _query }}">{% endif %}
+              {% if request.sort is not empty %}
+                <input type="hidden" name="sort" value="{{ request.sort }}">
+              {% endif %}
+              <div class="form-row mb-3">
+                <div class="col-6">
+                  <label class="sr-only" for="min_price">{{ 'filter.min' | t | default('Min') }}</label>
+                  <div class="input-group input-group-sm">
+                    <div class="input-group-prepend">
+                      <span class="input-group-text">{{ store.currency.symbol | default('') }}</span>
+                    </div>
+                    <input
+                      type="number"
+                      name="min_price"
+                      id="min_price"
+                      class="form-control"
+                      placeholder="{{ 'filter.min' | t | default('Min') }}"
+                      value="{{ request.min_price | default('') }}"
+                      min="0">
+                  </div>
+                </div>
+                <div class="col-6">
+                  <label class="sr-only" for="max_price">{{ 'filter.max' | t | default('Max') }}</label>
+                  <div class="input-group input-group-sm">
+                    <div class="input-group-prepend">
+                      <span class="input-group-text">{{ store.currency.symbol | default('') }}</span>
+                    </div>
+                    <input
+                      type="number"
+                      name="max_price"
+                      id="max_price"
+                      class="form-control"
+                      placeholder="{{ 'filter.max' | t | default('Max') }}"
+                      value="{{ request.max_price | default('') }}"
+                      min="0">
+                  </div>
+                </div>
+              </div>
+              <button type="submit" class="btn btn-primary btn-sm btn-block">
+                <i class="fa fa-check mr-1" aria-hidden="true"></i>
+                {{ 'filter.apply' | t | default('Apply') }}
+              </button>
+              {% if request.min_price is not empty or request.max_price is not empty %}
+                <a href="?" class="btn btn-link btn-sm btn-block text-muted mt-1 p-0">
+                  {{ 'filter.clear' | t | default('Clear filters') }}
+                </a>
+              {% endif %}
+            </form>
+          </div>
+        </div>
+
+        {# ── Tag cloud (optional) ───────────────────────────────────── #}
+        {% if tags is defined and tags | length %}
+          <div class="sidebar-widget card border-0 shadow-sm mb-4">
+            <div class="card-header bg-transparent border-bottom font-weight-semibold">
+              <i class="fa fa-hashtag mr-2 text-primary" aria-hidden="true"></i>
+              {{ 'filter.tags' | t | default('Tags') }}
+            </div>
+            <div class="card-body">
+              <div class="tag-cloud d-flex flex-wrap">
+                {% for tag in tags %}
+                  <a href="?tag={{ tag | url_encode }}"
+                     class="badge badge-secondary mr-1 mb-1{% if request.tag == tag %} badge-primary{% endif %}">
+                    {{ tag }}
+                  </a>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+        {% endif %}
+
+      </div>{# /#sidebar-collapse #}
+    </aside>
+
+    {# ══════════════════════════════════════════════════════════════════
+       MAIN CONTENT: Toolbar + Grid + Pagination
+       ══════════════════════════════════════════════════════════════════ #}
+    <div class="col-lg-9 col-md-8">
+
+      {# ── Toolbar ──────────────────────────────────────────────────── #}
+      <div class="products-toolbar d-flex align-items-center justify-content-between mb-4 flex-wrap">
+
+        {# Results count #}
+        <p class="toolbar-count text-muted mb-0 mr-3">
+          {{ products.total | default(0) }}
+          {{ 'products.found' | t | default('products found') }}
+          {% if _is_search %}
+            {{ 'search.for' | t | default('for') }}
+            <strong>&ldquo;{{ _query }}&rdquo;</strong>
+          {% endif %}
+        </p>
+
+        {# Sort select #}
+        <form class="toolbar-sort d-flex align-items-center" method="get" id="sort-form">
+          {# Preserve query params #}
+          {% if _is_search %}<input type="hidden" name="q" value="{{ _query }}">{% endif %}
+          {% if request.min_price is not empty %}
+            <input type="hidden" name="min_price" value="{{ request.min_price }}">
+          {% endif %}
+          {% if request.max_price is not empty %}
+            <input type="hidden" name="max_price" value="{{ request.max_price }}">
+          {% endif %}
+
+          <label for="sort-select" class="mr-2 mb-0 text-muted" style="white-space:nowrap; font-size:var(--fs-14);">
+            {{ 'sort.label' | t | default('Sort by') }}:
+          </label>
+          <select
+            id="sort-select"
+            name="sort"
+            class="custom-select custom-select-sm"
+            style="min-width:160px;"
+            onchange="this.form.submit()"
+            aria-label="{{ 'sort.label' | t | default('Sort by') }}">
+            <option value="" {% if not request.sort %}selected{% endif %}>
+              {{ 'sort.default' | t | default('Default') }}
+            </option>
+            <option value="newest" {% if request.sort == 'newest' %}selected{% endif %}>
+              {{ 'sort.newest' | t | default('Newest') }}
+            </option>
+            <option value="price_asc" {% if request.sort == 'price_asc' %}selected{% endif %}>
+              {{ 'sort.price_asc' | t | default('Price: Low to High') }}
+            </option>
+            <option value="price_desc" {% if request.sort == 'price_desc' %}selected{% endif %}>
+              {{ 'sort.price_desc' | t | default('Price: High to Low') }}
+            </option>
+            <option value="popular" {% if request.sort == 'popular' %}selected{% endif %}>
+              {{ 'sort.popular' | t | default('Most Popular') }}
+            </option>
+            <option value="rating" {% if request.sort == 'rating' %}selected{% endif %}>
+              {{ 'sort.rating' | t | default('Top Rated') }}
+            </option>
+          </select>
+        </form>
+      </div>
+
+      {# ── Product Grid ─────────────────────────────────────────────── #}
+      {% set _products = products.data | default([]) %}
+
+      {% if _products | length > 0 %}
+        <div class="row products-grid" id="products-grid">
+          {% for product in _products %}
+            <div class="{{ _col_class }} mb-4">
+              {% include 'components/product/card.twig' ignore missing %}
+            </div>
+          {% endfor %}
+        </div>
+
+      {% else %}
+        {# ── Empty State ──────────────────────────────────────────────── #}
+        <div class="empty-state text-center py-5 px-3" id="empty-state">
+          <span class="empty-state__icon d-block mb-4" aria-hidden="true">
+            {% if _is_search %}
+              <i class="fa fa-search fa-4x text-muted"></i>
+            {% else %}
+              <i class="fa fa-shopping-bag fa-4x text-muted"></i>
+            {% endif %}
+          </span>
+
+          {% if _is_search %}
+            <h3 class="empty-state__title h4 mb-2">
+              {{ 'search.no_results' | t | default('No results found') }}
+            </h3>
+            <p class="empty-state__desc text-muted mb-4">
+              {{ 'search.no_results_desc' | t | default('Try different keywords or browse our catalog.') }}
+            </p>
+            {# Suggested search bar #}
+            <form action="/search" method="get" class="d-inline-flex mb-3" style="max-width:360px; width:100%;">
+              <div class="input-group">
+                <input
+                  type="text"
+                  name="q"
+                  class="form-control"
+                  placeholder="{{ 'search.placeholder' | t | default('Search products…') }}"
+                  aria-label="{{ 'search.placeholder' | t | default('Search products') }}">
+                <div class="input-group-append">
+                  <button class="btn btn-primary" type="submit">
+                    <i class="fa fa-search" aria-hidden="true"></i>
+                  </button>
+                </div>
+              </div>
+            </form>
+            <br>
+            <a href="/products" class="btn btn-outline-primary mt-2">
+              {{ 'products.browse_all' | t | default('Browse all products') }}
+            </a>
+          {% else %}
+            <h3 class="empty-state__title h4 mb-2">
+              {{ 'products.empty_category' | t | default('No products yet') }}
+            </h3>
+            <p class="empty-state__desc text-muted mb-4">
+              {{ 'products.empty_category_desc' | t | default('This category doesn\'t have any products yet. Check back soon!') }}
+            </p>
+            <a href="/products" class="btn btn-primary">
+              {{ 'products.browse_all' | t | default('Browse all products') }}
+            </a>
+          {% endif %}
+        </div>
+      {% endif %}
+
+      {# ── Pagination ───────────────────────────────────────────────── #}
+      {% if products.last_page is defined and products.last_page > 1 %}
+        {% set _cur  = products.current_page %}
+        {% set _last = products.last_page %}
+        {% set _window = 2 %}
+
+        <nav aria-label="{{ 'common.pagination' | t | default('Pagination') }}" class="mt-4">
+          <ul class="pagination justify-content-center flex-wrap">
+
+            {# Previous #}
+            <li class="page-item {% if _cur <= 1 %}disabled{% endif %}">
+              <a class="page-link"
+                 href="?page={{ [_cur - 1, 1] | max }}{% if request.sort %}&sort={{ request.sort }}{% endif %}{% if _is_search %}&q={{ _query | url_encode }}{% endif %}"
+                 aria-label="{{ 'common.prev' | t | default('Previous') }}"
+                 {% if _cur <= 1 %}aria-disabled="true" tabindex="-1"{% endif %}>
+                <i class="fa fa-angle-left" aria-hidden="true"></i>
+              </a>
+            </li>
+
+            {# First page + ellipsis #}
+            {% if _cur - _window > 2 %}
+              <li class="page-item">
+                <a class="page-link" href="?page=1{% if request.sort %}&sort={{ request.sort }}{% endif %}{% if _is_search %}&q={{ _query | url_encode }}{% endif %}">1</a>
+              </li>
+              <li class="page-item disabled"><span class="page-link">…</span></li>
+            {% endif %}
+
+            {# Windowed pages #}
+            {% for p in max(1, _cur - _window)..min(_last, _cur + _window) %}
+              <li class="page-item {% if p == _cur %}active{% endif %}" {% if p == _cur %}aria-current="page"{% endif %}>
+                <a class="page-link"
+                   href="?page={{ p }}{% if request.sort %}&sort={{ request.sort }}{% endif %}{% if _is_search %}&q={{ _query | url_encode }}{% endif %}">
+                  {{ p }}
+                </a>
+              </li>
+            {% endfor %}
+
+            {# Last page + ellipsis #}
+            {% if _cur + _window < _last - 1 %}
+              <li class="page-item disabled"><span class="page-link">…</span></li>
+              <li class="page-item">
+                <a class="page-link" href="?page={{ _last }}{% if request.sort %}&sort={{ request.sort }}{% endif %}{% if _is_search %}&q={{ _query | url_encode }}{% endif %}">{{ _last }}</a>
+              </li>
+            {% endif %}
+
+            {# Next #}
+            <li class="page-item {% if _cur >= _last %}disabled{% endif %}">
+              <a class="page-link"
+                 href="?page={{ [_cur + 1, _last] | min }}{% if request.sort %}&sort={{ request.sort }}{% endif %}{% if _is_search %}&q={{ _query | url_encode }}{% endif %}"
+                 aria-label="{{ 'common.next' | t | default('Next') }}"
+                 {% if _cur >= _last %}aria-disabled="true" tabindex="-1"{% endif %}>
+                <i class="fa fa-angle-right" aria-hidden="true"></i>
+              </a>
+            </li>
+
+          </ul>
+        </nav>
+      {% endif %}
+
+    </div>{# /.col-lg-9 #}
+  </div>{# /.row #}
+</div>{# /.container-fluid #}
+
+{% endblock %}

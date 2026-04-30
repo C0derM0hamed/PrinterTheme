@@ -1,0 +1,58 @@
+{% extends 'layouts/master.twig' %}
+
+{% block title %}{{ 'brands.title' | t | default('Brands') }} — {{ store.name }}{% endblock %}
+{% block description %}{{ 'brands.meta_description' | t | default('Browse products by brand.') }}{% endblock %}
+
+{% block content %}
+
+<nav class="breadcrumb-bar" aria-label="{{ 'nav.breadcrumb' | t | default('Breadcrumb') }}">
+  <div class="container-fluid px-xl-5">
+    <ol class="breadcrumb mb-0 py-3">
+      <li class="breadcrumb-item"><a href="{{ store.url }}">{{ 'nav.home' | t | default('Home') }}</a></li>
+      <li class="breadcrumb-item active" aria-current="page">{{ 'brands.title' | t | default('Brands') }}</li>
+    </ol>
+  </div>
+</nav>
+
+<div class="container-fluid px-xl-5 py-5">
+
+  <div class="section-head text-center mb-5">
+    <p class="section-head__eyebrow">{{ 'brands.eyebrow' | t | default('Our Partners') }}</p>
+    <h1 class="section-head__title">{{ 'brands.heading' | t | default('Shop by Brand') }}</h1>
+  </div>
+
+  {% if brands is defined and brands | length > 0 %}
+    <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-6 g-4">
+      {% for brand in brands %}
+        <div class="col">
+          <a href="{{ brand.url }}" class="brand-chip card border-0 shadow-sm rounded-12 text-center p-3 d-flex flex-column align-items-center h-100">
+            {% if brand.logo %}
+              <img src="{{ brand.logo | image_resize(120, 80) }}"
+                   alt="{{ brand.name }}"
+                   loading="lazy"
+                   class="brand-chip__logo mb-2"
+                   style="max-height:60px;object-fit:contain;">
+            {% else %}
+              <div class="brand-chip__icon mb-2">
+                <i class="fa fa-building" aria-hidden="true"></i>
+              </div>
+            {% endif %}
+            <span class="brand-chip__name small font-weight-500">{{ brand.name }}</span>
+            {% if brand.products_count is defined %}
+              <span class="brand-chip__count text-muted x-small">{{ brand.products_count }} {{ 'products.title' | t | default('products') }}</span>
+            {% endif %}
+          </a>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state text-center py-6">
+      <div class="empty-state__icon"><i class="fa fa-building" aria-hidden="true"></i></div>
+      <h2 class="empty-state__title">{{ 'brands.empty_title' | t | default('No brands yet') }}</h2>
+      <p class="empty-state__body">{{ 'brands.empty_body' | t | default('Brands will appear here once added.') }}</p>
+    </div>
+  {% endif %}
+
+</div>
+
+{% endblock %}

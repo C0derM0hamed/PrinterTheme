@@ -1,0 +1,149 @@
+{#
+  Footer
+  ------
+  Layout (desktop):
+    [ Brand + description + contact ] [ Quick links ] [ Account ] [ Newsletter + social ]
+    --------------------------- payments + copyright ----------------------------
+#}
+
+<footer class="site-footer" role="contentinfo">
+
+  <div class="site-footer__main">
+    <div class="container-fluid">
+      <div class="row site-footer__columns">
+
+        {# Brand column #}
+        <div class="col-lg-4 col-md-12 site-footer__col site-footer__col--brand">
+          <a href="{{ store.url }}" class="site-footer__brand" aria-label="{{ store.name }}">
+            {% if store.logo %}
+              <img src="{{ store.logo }}" alt="{{ store.name }}" loading="lazy">
+            {% else %}
+              <span class="site-footer__brand-text">{{ store.name }}</span>
+            {% endif %}
+          </a>
+          {% if store.description %}
+            <p class="site-footer__about">{{ store.description }}</p>
+          {% endif %}
+
+          <ul class="site-footer__contact">
+            {% if store.address %}
+              <li>
+                <i class="fa fa-map-marker-alt" aria-hidden="true"></i>
+                <span>{{ store.address }}</span>
+              </li>
+            {% endif %}
+            {% if store.email %}
+              <li>
+                <i class="fa fa-envelope" aria-hidden="true"></i>
+                <a href="mailto:{{ store.email }}">{{ store.email }}</a>
+              </li>
+            {% endif %}
+            {% if store.phone %}
+              <li>
+                <i class="fa fa-phone-alt" aria-hidden="true"></i>
+                <a href="tel:{{ store.phone }}" dir="ltr">{{ store.phone }}</a>
+              </li>
+            {% endif %}
+          </ul>
+        </div>
+
+        {# Quick links #}
+        <div class="col-lg-2 col-md-4 col-6 site-footer__col">
+          <h6 class="site-footer__title">{{ 'footer.quick_links' | t | default('Quick links') }}</h6>
+          <ul class="site-footer__links">
+            <li><a href="{{ store.url }}">{{ 'nav.home' | t | default('Home') }}</a></li>
+            <li><a href="/products">{{ 'nav.shop' | t | default('Shop') }}</a></li>
+            <li><a href="/cart">{{ 'cart.title' | t | default('Cart') }}</a></li>
+            <li><a href="/blogs">{{ 'nav.blog' | t | default('Blog') }}</a></li>
+            <li><a href="/contact-us">{{ 'nav.contact' | t | default('Contact') }}</a></li>
+          </ul>
+        </div>
+
+        {# Account #}
+        <div class="col-lg-2 col-md-4 col-6 site-footer__col">
+          <h6 class="site-footer__title">{{ 'footer.my_account' | t | default('My account') }}</h6>
+          <ul class="site-footer__links">
+            <li><a href="/profile">{{ 'account.profile' | t | default('Profile') }}</a></li>
+            <li><a href="/orders">{{ 'account.orders' | t | default('Orders') }}</a></li>
+            <li><a href="/wishlist">{{ 'account.wishlist' | t | default('Wishlist') }}</a></li>
+            <li><a href="/notifications">{{ 'account.notifications' | t | default('Notifications') }}</a></li>
+            <li><a href="/loyalty">{{ 'account.loyalty' | t | default('Loyalty') }}</a></li>
+          </ul>
+        </div>
+
+        {# Newsletter + Social #}
+        <div class="col-lg-4 col-md-4 col-12 site-footer__col site-footer__col--news">
+          <h6 class="site-footer__title">{{ 'footer.newsletter' | t | default('Newsletter') }}</h6>
+          <p class="site-footer__news-text">
+            {{ 'footer.newsletter_text' | t | default('Subscribe for offers, fresh templates and seasonal promotions.') }}
+          </p>
+
+          <form class="site-footer__news-form" action="/newsletter/subscribe" method="post">
+            <input type="email"
+                   name="email"
+                   required
+                   placeholder="{{ 'footer.email_placeholder' | t | default('Your email address') }}"
+                   aria-label="{{ 'footer.email_placeholder' | t | default('Email') }}">
+            <button type="submit">
+              <span>{{ 'footer.subscribe' | t | default('Subscribe') }}</span>
+              <i class="fa fa-paper-plane" aria-hidden="true"></i>
+            </button>
+          </form>
+
+          {% if store.social %}
+            <h6 class="site-footer__title site-footer__title--sm">{{ 'footer.follow_us' | t | default('Follow us') }}</h6>
+            <div class="site-footer__social">
+              {% if store.social.twitter %}<a href="{{ store.social.twitter }}" target="_blank" rel="noopener" aria-label="Twitter"><i class="fa-brands fa-twitter" aria-hidden="true"></i></a>{% endif %}
+              {% if store.social.instagram %}<a href="{{ store.social.instagram }}" target="_blank" rel="noopener" aria-label="Instagram"><i class="fa-brands fa-instagram" aria-hidden="true"></i></a>{% endif %}
+              {% if store.social.facebook %}<a href="{{ store.social.facebook }}" target="_blank" rel="noopener" aria-label="Facebook"><i class="fa-brands fa-facebook-f" aria-hidden="true"></i></a>{% endif %}
+              {% if store.social.snapchat %}<a href="{{ store.social.snapchat }}" target="_blank" rel="noopener" aria-label="Snapchat"><i class="fa-brands fa-snapchat" aria-hidden="true"></i></a>{% endif %}
+              {% if store.social.tiktok %}<a href="{{ store.social.tiktok }}" target="_blank" rel="noopener" aria-label="TikTok"><i class="fa-brands fa-tiktok" aria-hidden="true"></i></a>{% endif %}
+              {% if store.social.youtube %}<a href="{{ store.social.youtube }}" target="_blank" rel="noopener" aria-label="YouTube"><i class="fa-brands fa-youtube" aria-hidden="true"></i></a>{% endif %}
+            </div>
+          {% endif %}
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="site-footer__bottom">
+    <div class="container-fluid">
+      <div class="d-md-flex align-items-center justify-content-between">
+
+        <p class="site-footer__copy">
+          &copy; {{ "now" | date("Y") }}
+          <a href="{{ store.url }}">{{ store.name }}</a>.
+          {{ 'footer.rights' | t | default('All rights reserved.') }}
+        </p>
+
+        <div class="site-footer__pay" aria-label="{{ 'footer.payment_methods' | t | default('Accepted payment methods') }}">
+          {% if store.payment_methods %}
+            {% for method in store.payment_methods %}
+              {% if method.icon %}
+                <img src="{{ method.icon }}" alt="{{ method.name }}" loading="lazy">
+              {% endif %}
+            {% endfor %}
+          {% else %}
+            <span class="site-footer__pay-icon" title="Visa">
+              <i class="fa-brands fa-cc-visa" aria-hidden="true"></i>
+            </span>
+            <span class="site-footer__pay-icon" title="Mastercard">
+              <i class="fa-brands fa-cc-mastercard" aria-hidden="true"></i>
+            </span>
+            <span class="site-footer__pay-icon" title="Apple Pay">
+              <i class="fa-brands fa-cc-apple-pay" aria-hidden="true"></i>
+            </span>
+            <span class="site-footer__pay-icon" title="PayPal">
+              <i class="fa-brands fa-cc-paypal" aria-hidden="true"></i>
+            </span>
+            <span class="site-footer__pay-icon" title="mada">
+              <i class="fa fa-credit-card" aria-hidden="true"></i>
+            </span>
+          {% endif %}
+        </div>
+
+      </div>
+    </div>
+  </div>
+</footer>

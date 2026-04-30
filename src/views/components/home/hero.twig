@@ -1,0 +1,182 @@
+{#
+  Hero slider + side offer stack
+  ------------------------------
+  Pulls from `store.banners` (Salla's banners feed). Falls back to a
+  beautiful default slide if the store hasn't set any up yet so the
+  homepage never looks empty during preview.
+
+  The lightweight slider behaviour (autoplay, dots, arrows, pause-on-hover,
+  prefers-reduced-motion guard) is handled inline so the partial works
+  on its own without requiring the global theme.js to be wired first.
+#}
+
+{% set _banners = store.banners | default([]) %}
+
+<section class="hero" aria-label="{{ 'hero.title' | t | default('Highlights') }}">
+  <div class="container-fluid">
+    <div class="hero__grid">
+
+      <div class="hero__slider"
+           data-hero-slider
+           data-autoplay="6000"
+           role="region"
+           aria-roledescription="carousel"
+           aria-label="{{ 'hero.title' | t | default('Highlights') }}">
+
+        {% if _banners | length > 0 %}
+          {% for banner in _banners %}
+            <article class="hero__slide{% if loop.first %} is-active{% endif %}"
+                     style="{% if banner.image %}background-image: url('{{ banner.image }}');{% endif %}"
+                     aria-hidden="{% if loop.first %}false{% else %}true{% endif %}"
+                     aria-roledescription="slide"
+                     aria-label="{{ banner.title }}">
+              <div class="hero__caption">
+                {% if banner.subtitle %}
+                  <span class="eyebrow">{{ banner.subtitle }}</span>
+                {% endif %}
+                <h2>{{ banner.title }}</h2>
+                {% if banner.description %}
+                  <p>{{ banner.description }}</p>
+                {% endif %}
+                <div class="hero__ctas">
+                  {% if banner.url %}
+                    <a href="{{ banner.url }}" class="btn btn-primary btn-lg">
+                      {{ banner.cta | default(('banner.shop_now' | t | default('Shop now'))) }}
+                      <i class="fa fa-arrow-right" aria-hidden="true"></i>
+                    </a>
+                  {% endif %}
+                  <a href="/products" class="btn btn-light btn-lg">
+                    {{ 'banner.browse' | t | default('Browse all') }}
+                  </a>
+                </div>
+              </div>
+            </article>
+          {% endfor %}
+        {% else %}
+          <article class="hero__slide is-active"
+                   style="background-image: linear-gradient(135deg, var(--color-primary), var(--color-primary-700));"
+                   aria-roledescription="slide">
+            <div class="hero__caption">
+              <span class="eyebrow">{{ 'hero.eyebrow' | t | default('Premium Print Studio') }}</span>
+              <h2>{{ 'hero.title_default' | t | default('Print anything. Beautifully.') }}</h2>
+              <p>{{ 'hero.subtitle_default' | t | default('From business cards to large-format banners — fast turnaround, premium materials, and live pricing as you customize.') }}</p>
+              <div class="hero__ctas">
+                <a href="/products" class="btn btn-accent btn-lg">
+                  {{ 'banner.shop_now' | t | default('Start your order') }}
+                  <i class="fa fa-arrow-right" aria-hidden="true"></i>
+                </a>
+                <a href="#featured-products" class="btn btn-light btn-lg">
+                  {{ 'banner.see_featured' | t | default('See featured') }}
+                </a>
+              </div>
+            </div>
+          </article>
+        {% endif %}
+
+        {% if _banners | length > 1 %}
+          <button type="button"
+                  class="hero__arrow hero__arrow--prev"
+                  data-hero-prev
+                  aria-label="{{ 'hero.prev' | t | default('Previous slide') }}">
+            <i class="fa fa-chevron-left" aria-hidden="true"></i>
+          </button>
+          <button type="button"
+                  class="hero__arrow hero__arrow--next"
+                  data-hero-next
+                  aria-label="{{ 'hero.next' | t | default('Next slide') }}">
+            <i class="fa fa-chevron-right" aria-hidden="true"></i>
+          </button>
+
+          <div class="hero__dots" role="tablist" aria-label="{{ 'hero.pagination' | t | default('Slide pagination') }}">
+            {% for banner in _banners %}
+              <button type="button"
+                      class="hero__dot{% if loop.first %} is-active{% endif %}"
+                      data-hero-dot="{{ loop.index0 }}"
+                      role="tab"
+                      aria-selected="{% if loop.first %}true{% else %}false{% endif %}"
+                      aria-label="{{ 'hero.go_to_slide' | t | default('Go to slide') }} {{ loop.index }}">
+              </button>
+            {% endfor %}
+          </div>
+        {% endif %}
+      </div>
+
+      <aside class="hero__side" aria-label="{{ 'hero.offers' | t | default('Featured offers') }}">
+
+        {% set _offer1 = store.offers[0] | default(null) %}
+        {% set _offer2 = store.offers[1] | default(null) %}
+
+        <a href="{{ _offer1.url | default('/products') }}" class="hero__offer">
+          {% if _offer1 and _offer1.image %}
+            <img src="{{ _offer1.image }}" alt="{{ _offer1.title | default('') }}" loading="lazy">
+          {% endif %}
+          <div class="hero__offer-body">
+            <span class="hero__offer-eyebrow">{{ _offer1.subtitle | default(('hero.offer_eyebrow_1' | t | default('Limited time'))) }}</span>
+            <h3 class="hero__offer-title">{{ _offer1.title | default(('hero.offer_title_1' | t | default('Up to 30% off business cards'))) }}</h3>
+          </div>
+        </a>
+
+        <a href="{{ _offer2.url | default('/products') }}" class="hero__offer">
+          {% if _offer2 and _offer2.image %}
+            <img src="{{ _offer2.image }}" alt="{{ _offer2.title | default('') }}" loading="lazy">
+          {% endif %}
+          <div class="hero__offer-body">
+            <span class="hero__offer-eyebrow">{{ _offer2.subtitle | default(('hero.offer_eyebrow_2' | t | default('Free design'))) }}</span>
+            <h3 class="hero__offer-title">{{ _offer2.title | default(('hero.offer_title_2' | t | default('Free template setup with every banner'))) }}</h3>
+          </div>
+        </a>
+      </aside>
+
+    </div>
+  </div>
+</section>
+
+<script>
+(function () {
+  var slider = document.querySelector('[data-hero-slider]');
+  if (!slider) return;
+
+  var slides = slider.querySelectorAll('.hero__slide');
+  var dots   = slider.querySelectorAll('[data-hero-dot]');
+  var prev   = slider.querySelector('[data-hero-prev]');
+  var next   = slider.querySelector('[data-hero-next]');
+  if (slides.length < 2) return;
+
+  var idx = 0;
+  var timer = null;
+  var delay = parseInt(slider.dataset.autoplay, 10) || 6000;
+  var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function go(i) {
+    idx = (i + slides.length) % slides.length;
+    slides.forEach(function (s, n) {
+      s.classList.toggle('is-active', n === idx);
+      s.setAttribute('aria-hidden', n === idx ? 'false' : 'true');
+    });
+    dots.forEach(function (d, n) {
+      d.classList.toggle('is-active', n === idx);
+      d.setAttribute('aria-selected', n === idx ? 'true' : 'false');
+    });
+  }
+
+  function start() {
+    if (reduceMotion) return;
+    stop();
+    timer = setInterval(function () { go(idx + 1); }, delay);
+  }
+  function stop() { if (timer) { clearInterval(timer); timer = null; } }
+
+  prev && prev.addEventListener('click', function () { go(idx - 1); start(); });
+  next && next.addEventListener('click', function () { go(idx + 1); start(); });
+  dots.forEach(function (d) {
+    d.addEventListener('click', function () { go(parseInt(this.dataset.heroDot, 10) || 0); start(); });
+  });
+
+  slider.addEventListener('mouseenter', stop);
+  slider.addEventListener('mouseleave', start);
+  slider.addEventListener('focusin', stop);
+  slider.addEventListener('focusout', start);
+
+  start();
+})();
+</script>

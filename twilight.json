@@ -1,0 +1,273 @@
+{
+  "name": "PrinterTheme",
+  "version": "1.0.0",
+  "description": "A premium Salla Twilight theme for print shops, with a live print-spec quote calculator and design-file upload toolkit.",
+  "author": {
+    "name": "PrinterTheme Authors",
+    "email": "support@printertheme.dev",
+    "url": "https://salla.dev"
+  },
+  "support_url": "https://salla.dev",
+  "repo_url": "https://github.com/printertheme/printertheme",
+  "tags": ["printing", "print-shop", "stationery", "rtl", "premium"],
+  "settings": [
+    {
+      "id": "appearance",
+      "type": "tab",
+      "label": "Appearance",
+      "icon": "sicon-paint-brush",
+      "fields": [
+        {
+          "id": "primary_color",
+          "type": "string",
+          "format": "color",
+          "label": "Primary Color",
+          "description": "Main brand color used for buttons, links and highlights.",
+          "value": "#0d6efd"
+        },
+        {
+          "id": "accent_color",
+          "type": "string",
+          "format": "color",
+          "label": "Accent Color",
+          "description": "Used for CTA emphasis and the print toolkit highlights.",
+          "value": "#ff6b4a"
+        },
+        {
+          "id": "font_family",
+          "type": "string",
+          "format": "list",
+          "label": "Font Family",
+          "description": "UI font. Cairo / Tajawal are recommended for stores with primarily Arabic content.",
+          "value": "Poppins",
+          "options": [
+            { "value": "Poppins", "label": "Poppins" },
+            { "value": "Cairo", "label": "Cairo" },
+            { "value": "Tajawal", "label": "Tajawal" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "homepage",
+      "type": "tab",
+      "label": "Homepage",
+      "icon": "sicon-home",
+      "fields": [
+        {
+          "id": "show_hero_slider",
+          "type": "boolean",
+          "format": "switch",
+          "label": "Show Hero Slider",
+          "description": "Toggle the full-bleed hero slider on the homepage.",
+          "value": true
+        },
+        {
+          "id": "products_per_row",
+          "type": "string",
+          "format": "list",
+          "label": "Products Per Row",
+          "description": "Grid density on listing pages (desktop).",
+          "value": "3",
+          "options": [
+            { "value": "2", "label": "2 columns" },
+            { "value": "3", "label": "3 columns" },
+            { "value": "4", "label": "4 columns" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "print_toolkit",
+      "type": "tab",
+      "label": "Print Toolkit",
+      "icon": "sicon-printer",
+      "fields": [
+        {
+          "id": "enable_file_upload",
+          "type": "boolean",
+          "format": "switch",
+          "label": "Enable Design File Upload",
+          "description": "Show the drag-and-drop upload zone on the product page.",
+          "value": true
+        },
+        {
+          "id": "accepted_file_types",
+          "type": "string",
+          "label": "Accepted File Types",
+          "description": "Comma-separated extensions for the file input's `accept` attribute.",
+          "value": ".pdf,.ai,.psd,.png,.jpg,.jpeg,.eps"
+        },
+        {
+          "id": "max_upload_mb",
+          "type": "number",
+          "label": "Max Upload Size (MB)",
+          "description": "Reject uploads larger than this size client-side.",
+          "value": 50
+        },
+        {
+          "id": "min_order_quantity",
+          "type": "number",
+          "label": "Minimum Order Quantity",
+          "description": "Lower bound for the quantity stepper on print products.",
+          "value": 1
+        },
+        {
+          "id": "enable_print_specs",
+          "type": "boolean",
+          "format": "switch",
+          "label": "Enable Print Specifications",
+          "description": "Show the paper size / type / sides / color / finishing controls.",
+          "value": true
+        },
+        {
+          "id": "delivery_base_days",
+          "type": "number",
+          "label": "Base Delivery Days",
+          "description": "Base business days used to compute the delivery ETA estimator.",
+          "value": 3
+        }
+      ]
+    },
+    {
+      "id": "contact",
+      "type": "tab",
+      "label": "Contact",
+      "icon": "sicon-phone",
+      "fields": [
+        {
+          "id": "whatsapp_phone",
+          "type": "string",
+          "label": "WhatsApp Number",
+          "description": "International format without `+`, e.g. 9665XXXXXXXX. Used for the floating support button and product share.",
+          "value": ""
+        }
+      ]
+    }
+  ],
+  "features": [
+    "component-featured-products",
+    "component-photos-slider",
+    "component-products-slider",
+    "component-fixed-banner",
+    "component-store-features",
+    "filters"
+  ],
+  "components": [
+    {
+      "name": "print-services-grid",
+      "path": "home.print-services",
+      "title": "Print Services Grid",
+      "description": "A grid of print service categories (business cards, flyers, banners, etc.) with icon, title and link.",
+      "icon": "sicon-image-carousel",
+      "fields": [
+        {
+          "id": "title",
+          "type": "string",
+          "label": "Section Title",
+          "value": "Our Print Services"
+        },
+        {
+          "id": "subtitle",
+          "type": "string",
+          "label": "Section Eyebrow",
+          "value": "What we print"
+        },
+        {
+          "id": "columns",
+          "type": "string",
+          "format": "list",
+          "label": "Columns",
+          "value": "4",
+          "options": [
+            { "value": "3", "label": "3 columns" },
+            { "value": "4", "label": "4 columns" },
+            { "value": "6", "label": "6 columns" }
+          ]
+        },
+        {
+          "id": "services",
+          "type": "array",
+          "label": "Services",
+          "description": "Each tile links to a category or product.",
+          "fields": [
+            {
+              "id": "icon",
+              "type": "string",
+              "label": "Icon class",
+              "description": "Font Awesome class, e.g. `fa-id-card` or `fa-file-pdf`.",
+              "value": "fa-print"
+            },
+            {
+              "id": "title",
+              "type": "string",
+              "label": "Title",
+              "value": "Business Cards"
+            },
+            {
+              "id": "url",
+              "type": "string",
+              "format": "url",
+              "label": "Link URL",
+              "value": "/categories/business-cards"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "quote-cta-band",
+      "path": "home.quote-cta",
+      "title": "Quote CTA Band",
+      "description": "Full-width promotional band that drives visitors toward a quote / contact CTA.",
+      "icon": "sicon-banner",
+      "fields": [
+        {
+          "id": "title",
+          "type": "string",
+          "label": "Title",
+          "value": "Need a custom print quote?"
+        },
+        {
+          "id": "description",
+          "type": "string",
+          "format": "textarea",
+          "label": "Description",
+          "value": "Tell us your specs and we'll get back within one business day."
+        },
+        {
+          "id": "cta_label",
+          "type": "string",
+          "label": "Button Label",
+          "value": "Request a Quote"
+        },
+        {
+          "id": "cta_url",
+          "type": "string",
+          "format": "url",
+          "label": "Button URL",
+          "value": "/pages/contact"
+        },
+        {
+          "id": "background_image",
+          "type": "string",
+          "format": "url",
+          "label": "Background Image",
+          "value": ""
+        },
+        {
+          "id": "alignment",
+          "type": "string",
+          "format": "list",
+          "label": "Text Alignment",
+          "value": "center",
+          "options": [
+            { "value": "start", "label": "Start" },
+            { "value": "center", "label": "Center" },
+            { "value": "end", "label": "End" }
+          ]
+        }
+      ]
+    }
+  ]
+}

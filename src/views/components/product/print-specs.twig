@@ -1,0 +1,199 @@
+{#
+  Print Specs — components/product/print-specs.twig
+  --------------------------------------------------
+  Enhanced print-shop specification selector.  Renders only when
+  `theme.settings.get('enable_print_specs')` is truthy (checked in the
+  parent product/single.twig, but also guarded here for safety).
+
+  Data attributes consumed by product.js:
+  - data-multiplier  on paper-size buttons  → multiplies base price
+  - data-price-add   on paper-type chips    → flat addition per unit
+  - data-multiplier  on sides radio         → multiplies running total
+  - data-multiplier  on color-mode radio    → multiplies running total
+  - data-price-add   on finishing checkboxes → flat addition per order
+  - data-base-days   on the delivery section → base days offset
+
+  All strings go through | t with sensible English defaults so the
+  template degrades gracefully if a locale key is missing.
+#}
+
+{% if theme.settings.get('enable_print_specs') | default(true) %}
+<div class="print-specs card border-0 shadow-sm rounded mb-4" id="print-specs"
+     aria-label="{{ 'product.print_specs' | t | default('Print Specifications') }}">
+
+  <div class="print-specs__header card-header bg-transparent border-bottom-0 pb-0 d-flex align-items-center">
+    <i class="fa fa-print text-primary mr-2" aria-hidden="true"></i>
+    <h6 class="mb-0 font-weight-semibold">{{ 'product.print_specs' | t | default('Print Specifications') }}</h6>
+  </div>
+
+  <div class="card-body pt-3">
+
+    {# ── 1. Paper Size ────────────────────────────────────────────── #}
+    <div class="print-spec-row mb-4">
+      <label class="print-spec-label">
+        {{ 'product.paper_size' | t | default('Paper Size') }}
+        <span class="text-danger ml-1" aria-hidden="true">*</span>
+      </label>
+      <div class="option-group option-group--chip d-flex flex-wrap print-spec-group"
+           data-spec="paper_size"
+           role="group"
+           aria-label="{{ 'product.paper_size' | t | default('Paper Size') }}">
+        <button type="button" class="btn btn-option-chip" data-spec-value="A6" data-multiplier="0.4">
+          A6 <small class="spec-dim">105×148 mm</small>
+        </button>
+        <button type="button" class="btn btn-option-chip" data-spec-value="A5" data-multiplier="0.55">
+          A5 <small class="spec-dim">148×210 mm</small>
+        </button>
+        <button type="button" class="btn btn-option-chip active" data-spec-value="A4" data-multiplier="1.0">
+          A4 <small class="spec-dim">210×297 mm</small>
+        </button>
+        <button type="button" class="btn btn-option-chip" data-spec-value="A3" data-multiplier="2.0">
+          A3 <small class="spec-dim">297×420 mm</small>
+        </button>
+        <button type="button" class="btn btn-option-chip" data-spec-value="A2" data-multiplier="4.0">
+          A2 <small class="spec-dim">420×594 mm</small>
+        </button>
+        <button type="button" class="btn btn-option-chip" data-spec-value="custom" data-multiplier="1.0"
+                aria-label="{{ 'product.custom_size' | t | default('Custom size') }}"
+                id="btn-custom-size">
+          {{ 'product.custom' | t | default('Custom') }}
+          <i class="fa fa-pencil ml-1" aria-hidden="true"></i>
+        </button>
+      </div>
+
+      {# Custom size inputs (hidden until "Custom" is selected) #}
+      <div class="print-spec-custom-size mt-2 d-none" id="custom-size-inputs">
+        <div class="form-row">
+          <div class="col-5">
+            <div class="input-group input-group-sm">
+              <input type="number" class="form-control" id="custom-width" min="1" max="2000"
+                     placeholder="{{ 'product.width_mm' | t | default('Width mm') }}"
+                     aria-label="{{ 'product.width_mm' | t | default('Width (mm)') }}">
+              <div class="input-group-append"><span class="input-group-text">mm</span></div>
+            </div>
+          </div>
+          <div class="col-2 text-center pt-1">×</div>
+          <div class="col-5">
+            <div class="input-group input-group-sm">
+              <input type="number" class="form-control" id="custom-height" min="1" max="2000"
+                     placeholder="{{ 'product.height_mm' | t | default('Height mm') }}"
+                     aria-label="{{ 'product.height_mm' | t | default('Height (mm)') }}">
+              <div class="input-group-append"><span class="input-group-text">mm</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {# ── 2. Paper Type ──────────────────────────────────────────────── #}
+    <div class="print-spec-row mb-4">
+      <label class="print-spec-label">
+        {{ 'product.paper_type' | t | default('Paper Type') }}
+        <span class="text-danger ml-1" aria-hidden="true">*</span>
+      </label>
+      <div class="option-group option-group--chip d-flex flex-wrap print-spec-group"
+           data-spec="paper_type"
+           role="group"
+           aria-label="{{ 'product.paper_type' | t | default('Paper Type') }}">
+        <button type="button" class="btn btn-option-chip active" data-spec-value="80gsm" data-price-add="0">
+          80 gsm <small class="spec-sub">{{ 'product.standard' | t | default('Standard') }}</small>
+        </button>
+        <button type="button" class="btn btn-option-chip" data-spec-value="120gsm" data-price-add="0.5">
+          120 gsm <small class="spec-sub">{{ 'product.medium' | t | default('Medium') }}</small>
+        </button>
+        <button type="button" class="btn btn-option-chip" data-spec-value="170gsm_glossy" data-price-add="1.5">
+          170 gsm <small class="spec-sub">{{ 'product.glossy' | t | default('Glossy') }}</small>
+        </button>
+        <button type="button" class="btn btn-option-chip" data-spec-value="250gsm_matte" data-price-add="2.5">
+          250 gsm <small class="spec-sub">{{ 'product.matte' | t | default('Matte') }}</small>
+        </button>
+      </div>
+    </div>
+
+    {# ── 3. Sides ──────────────────────────────────────────────────── #}
+    <div class="print-spec-row mb-4">
+      <label class="print-spec-label">{{ 'product.sides' | t | default('Sides') }}</label>
+      <div class="option-group option-group--chip d-flex print-spec-group"
+           data-spec="sides"
+           role="group"
+           aria-label="{{ 'product.sides' | t | default('Sides') }}">
+        <button type="button" class="btn btn-option-chip active" data-spec-value="single" data-multiplier="1.0">
+          <i class="fa fa-file mr-1" aria-hidden="true"></i>
+          {{ 'product.single_sided' | t | default('Single-sided') }}
+        </button>
+        <button type="button" class="btn btn-option-chip" data-spec-value="double" data-multiplier="1.7">
+          <i class="fa fa-copy mr-1" aria-hidden="true"></i>
+          {{ 'product.double_sided' | t | default('Double-sided') }}
+        </button>
+      </div>
+    </div>
+
+    {# ── 4. Color Mode ─────────────────────────────────────────────── #}
+    <div class="print-spec-row mb-4">
+      <label class="print-spec-label">{{ 'product.color_mode' | t | default('Color Mode') }}</label>
+      <div class="option-group option-group--chip d-flex print-spec-group"
+           data-spec="color_mode"
+           role="group"
+           aria-label="{{ 'product.color_mode' | t | default('Color Mode') }}">
+        <button type="button" class="btn btn-option-chip active" data-spec-value="color" data-multiplier="1.0">
+          <i class="fa fa-tint mr-1" aria-hidden="true"></i>
+          {{ 'product.full_color' | t | default('Full Color') }}
+        </button>
+        <button type="button" class="btn btn-option-chip" data-spec-value="bw" data-multiplier="0.4">
+          <i class="fa fa-adjust mr-1" aria-hidden="true"></i>
+          {{ 'product.black_white' | t | default('Black & White') }}
+        </button>
+      </div>
+    </div>
+
+    {# ── 5. Finishing ──────────────────────────────────────────────── #}
+    <div class="print-spec-row mb-2">
+      <label class="print-spec-label">{{ 'product.finishing' | t | default('Finishing') }}</label>
+      <div class="print-spec-finishing d-flex flex-wrap" role="group"
+           aria-label="{{ 'product.finishing' | t | default('Finishing') }}">
+
+        <label class="finishing-option mr-3 mb-2" for="finish-none">
+          <input type="checkbox" id="finish-none" class="finishing-checkbox"
+                 data-spec-value="none" data-price-add="0" checked>
+          <span class="finishing-label">
+            <i class="fa fa-times-circle mr-1 text-muted" aria-hidden="true"></i>
+            {{ 'product.finish_none' | t | default('None') }}
+          </span>
+        </label>
+
+        <label class="finishing-option mr-3 mb-2" for="finish-lamination">
+          <input type="checkbox" id="finish-lamination" class="finishing-checkbox"
+                 data-spec-value="lamination" data-price-add="5">
+          <span class="finishing-label">
+            <i class="fa fa-layer-group mr-1" aria-hidden="true"></i>
+            {{ 'product.finish_lamination' | t | default('Lamination') }}
+            <small class="text-muted">(+5)</small>
+          </span>
+        </label>
+
+        <label class="finishing-option mr-3 mb-2" for="finish-binding">
+          <input type="checkbox" id="finish-binding" class="finishing-checkbox"
+                 data-spec-value="binding" data-price-add="8">
+          <span class="finishing-label">
+            <i class="fa fa-book mr-1" aria-hidden="true"></i>
+            {{ 'product.finish_binding' | t | default('Binding') }}
+            <small class="text-muted">(+8)</small>
+          </span>
+        </label>
+
+        <label class="finishing-option mb-2" for="finish-cutting">
+          <input type="checkbox" id="finish-cutting" class="finishing-checkbox"
+                 data-spec-value="cutting" data-price-add="3">
+          <span class="finishing-label">
+            <i class="fa fa-scissors mr-1" aria-hidden="true"></i>
+            {{ 'product.finish_cutting' | t | default('Cutting') }}
+            <small class="text-muted">(+3)</small>
+          </span>
+        </label>
+
+      </div>
+    </div>
+
+  </div>{# /.card-body #}
+</div>{# /.print-specs #}
+{% endif %}

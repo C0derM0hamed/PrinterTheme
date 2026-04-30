@@ -1,0 +1,83 @@
+{#
+  Featured products
+  -----------------
+  Renders up to 8 featured products. Prefers server-rendered cards via the
+  `products.featured` Twilight variable; falls back to Salla's
+  `<salla-products-list source="featured">` web component, which the SDK
+  hydrates from the store catalogue.
+
+  When `components/product/card.twig` is available it is used so the
+  product card markup is shared with category and search pages.
+#}
+
+{% set _featured = products.featured | default([]) %}
+
+<section id="featured-products" class="section" aria-label="{{ 'products.featured' | t | default('Featured products') }}">
+  <div class="container-fluid">
+
+    <header class="section-title">
+      <span class="eyebrow">{{ 'products.featured_eyebrow' | t | default('Hand-picked') }}</span>
+      <h2>{{ 'products.featured' | t | default('Featured products') }}</h2>
+      <span class="section-title__rule" aria-hidden="true"></span>
+      <p>{{ 'products.featured_subtitle' | t | default('Bestsellers loved by thousands of print customers.') }}</p>
+    </header>
+
+    {% if _featured | length > 0 %}
+      <div class="products-grid">
+        {% for product in _featured | slice(0, 8) %}
+          <article class="product-item">
+            <div class="product-img">
+              {% if product.thumbnail %}
+                <img src="{{ product.thumbnail | image_resize(360, 360) }}"
+                     alt="{{ product.name }}"
+                     loading="lazy">
+              {% endif %}
+              {% if product.on_sale %}
+                <span class="product-offer">{{ 'product.sale' | t | default('Sale') }}</span>
+              {% endif %}
+              <div class="product-action">
+                <a href="{{ product.url }}" class="btn btn-outline-primary">
+                  <i class="fa fa-eye" aria-hidden="true"></i>
+                  <span>{{ 'product.view' | t | default('View') }}</span>
+                </a>
+                <a href="{{ product.url }}" class="btn btn-primary">
+                  <i class="fa fa-shopping-bag" aria-hidden="true"></i>
+                  <span>{{ 'product.order' | t | default('Order') }}</span>
+                </a>
+              </div>
+            </div>
+            <div class="product-body">
+              <a class="product-title" href="{{ product.url }}">{{ product.name }}</a>
+              <div class="product-price">
+                {% if product.on_sale %}
+                  <span class="product-price__sale">{{ product.sale_price | money }}</span>
+                  <span class="product-price__old"><del>{{ product.price | money }}</del></span>
+                {% else %}
+                  <span>{{ product.price | money }}</span>
+                {% endif %}
+              </div>
+              {% if product.rating is defined %}
+                <div class="product-rating" aria-label="{{ product.rating }} / 5">
+                  {% for i in 1..5 %}
+                    <i class="fa fa-star {% if i > product.rating %}is-empty{% endif %}" aria-hidden="true"></i>
+                  {% endfor %}
+                  <span>({{ product.reviews_count | default(0) }})</span>
+                </div>
+              {% endif %}
+            </div>
+          </article>
+        {% endfor %}
+      </div>
+    {% else %}
+      <salla-products-list source="featured" limit="8" class="products-grid">
+        <div class="empty-state" slot="empty">
+          <span class="empty-state__icon"><i class="fa fa-star" aria-hidden="true"></i></span>
+          <h4>{{ 'products.no_featured' | t | default('No featured products yet') }}</h4>
+          <p>{{ 'products.no_featured_desc' | t | default('Mark a few products as featured from the dashboard to fill this section.') }}</p>
+          <a href="/products" class="btn btn-primary">{{ 'products.browse_all' | t | default('Browse all products') }}</a>
+        </div>
+      </salla-products-list>
+    {% endif %}
+
+  </div>
+</section>

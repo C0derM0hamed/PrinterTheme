@@ -1,0 +1,200 @@
+{% extends 'layouts/master.twig' %}
+
+{% block title %}{{ 'cart.title' | t | default('Shopping Cart') }} — {{ store.name }}{% endblock %}
+{% block description %}{{ 'cart.meta_description' | t | default('Review your cart and proceed to checkout.') }}{% endblock %}
+
+{% block content %}
+
+{# ─── Breadcrumb ────────────────────────────────────────────────────────────── #}
+<nav class="breadcrumb-bar" aria-label="{{ 'nav.breadcrumb' | t | default('Breadcrumb') }}">
+  <div class="container-fluid px-xl-5">
+    <ol class="breadcrumb mb-0 py-3">
+      <li class="breadcrumb-item"><a href="{{ store.url }}">{{ 'nav.home' | t | default('Home') }}</a></li>
+      <li class="breadcrumb-item active" aria-current="page">{{ 'cart.title' | t | default('Cart') }}</li>
+    </ol>
+  </div>
+</nav>
+
+{# ─── Page heading ───────────────────────────────────────────────────────────── #}
+<div class="container-fluid px-xl-5 py-4">
+  <h1 class="page-title mb-1">{{ 'cart.title' | t | default('Shopping Cart') }}</h1>
+  <p class="text-muted small mb-0">
+    {% if cart.count is defined and cart.count > 0 %}
+      {{ 'cart.item_count' | t({ count: cart.count }) | default(cart.count ~ ' item(s) in your cart') }}
+    {% endif %}
+  </p>
+</div>
+
+{# ─── Main ───────────────────────────────────────────────────────────────────── #}
+<div class="container-fluid px-xl-5 pb-5" id="cart-page">
+
+  {# ════════════════════════════════════════════════════════
+     EMPTY STATE
+     ════════════════════════════════════════════════════════ #}
+  {% if not cart.items or cart.items | length == 0 %}
+    <div class="empty-state text-center py-6" id="cart-empty">
+      <div class="empty-state__icon">
+        <i class="fa fa-shopping-bag" aria-hidden="true"></i>
+      </div>
+      <h2 class="empty-state__title">{{ 'cart.empty_title' | t | default('Your cart is empty') }}</h2>
+      <p class="empty-state__body">{{ 'cart.empty_body' | t | default('Looks like you haven\'t added any print jobs yet.') }}</p>
+      <a href="/products" class="btn btn-primary btn-lg mt-3">
+        {{ 'cart.start_shopping' | t | default('Start Shopping') }}
+      </a>
+    </div>
+
+  {# ════════════════════════════════════════════════════════
+     CART WITH ITEMS
+     ════════════════════════════════════════════════════════ #}
+  {% else %}
+    <div class="row">
+
+      {# ══ Left: Items list ══ #}
+      <div class="col-lg-8 mb-4 mb-lg-0">
+
+        {# Items header (desktop) #}
+        <div class="cart-table-head d-none d-md-grid">
+          <span>{{ 'cart.product' | t | default('Product') }}</span>
+          <span class="text-center">{{ 'cart.quantity' | t | default('Quantity') }}</span>
+          <span class="text-end">{{ 'cart.price' | t | default('Price') }}</span>
+          <span class="text-end">{{ 'cart.total' | t | default('Total') }}</span>
+          <span></span>
+        </div>
+
+        {# Items #}
+        <div class="cart-items-list" id="cart-items-list">
+          {% for item in cart.items %}
+            {% include 'components/cart/item.twig' with { item: item } %}
+          {% endfor %}
+        </div>
+
+        {# Cart actions row #}
+        <div class="cart-actions d-flex flex-wrap justify-content-between align-items-center mt-4">
+          <a href="/products" class="btn btn-outline-secondary">
+            <i class="fa fa-arrow-left mr-2" aria-hidden="true"></i>
+            {{ 'cart.continue_shopping' | t | default('Continue Shopping') }}
+          </a>
+          <button type="button" class="btn btn-outline-danger js-clear-cart" id="btn-clear-cart">
+            <i class="fa fa-trash mr-2" aria-hidden="true"></i>
+            {{ 'cart.clear_cart' | t | default('Clear Cart') }}
+          </button>
+        </div>
+
+        {# Notes textarea #}
+        <div class="cart-notes mt-4">
+          <label for="cart-order-notes" class="form-label font-weight-600">
+            {{ 'cart.order_notes_label' | t | default('Order Notes (optional)') }}
+          </label>
+          <textarea id="cart-order-notes"
+                    class="form-control"
+                    rows="3"
+                    placeholder="{{ 'cart.order_notes_placeholder' | t | default('E.g. urgent delivery, special instructions…') }}"></textarea>
+        </div>
+
+      </div>
+
+      {# ══ Right: Summary / coupon / checkout ══ #}
+      <div class="col-lg-4">
+        <div class="cart-summary card border-0 shadow-sm rounded-12">
+          <div class="card-body p-4">
+
+            <h2 class="cart-summary__title h5 mb-4">{{ 'cart.order_summary' | t | default('Order Summary') }}</h2>
+
+            {# Line items subtotal #}
+            <dl class="cart-summary__lines">
+              <div class="cart-summary__row">
+                <dt>{{ 'cart.subtotal' | t | default('Subtotal') }}</dt>
+                <dd id="cart-subtotal">{{ cart.subtotal | money }}</dd>
+              </div>
+
+              {% if cart.discount is defined and cart.discount > 0 %}
+                <div class="cart-summary__row cart-summary__row--discount">
+                  <dt>{{ 'cart.discount' | t | default('Discount') }}</dt>
+                  <dd id="cart-discount">-{{ cart.discount | money }}</dd>
+                </div>
+              {% endif %}
+
+              {% if cart.tax is defined and cart.tax > 0 %}
+                <div class="cart-summary__row">
+                  <dt>{{ 'cart.tax' | t | default('VAT (15%)') }}</dt>
+                  <dd id="cart-tax">{{ cart.tax | money }}</dd>
+                </div>
+              {% endif %}
+
+              {% if cart.shipping is defined and cart.shipping > 0 %}
+                <div class="cart-summary__row">
+                  <dt>{{ 'cart.shipping' | t | default('Shipping') }}</dt>
+                  <dd id="cart-shipping">{{ cart.shipping | money }}</dd>
+                </div>
+              {% endif %}
+
+              <div class="cart-summary__row cart-summary__row--total">
+                <dt>{{ 'cart.grand_total' | t | default('Total') }}</dt>
+                <dd id="cart-total">{{ cart.total | money }}</dd>
+              </div>
+            </dl>
+
+            {# Coupon code #}
+            <div class="cart-coupon mt-4" id="cart-coupon-section">
+              <label for="coupon-code" class="form-label small font-weight-600">
+                {{ 'cart.coupon_label' | t | default('Coupon Code') }}
+              </label>
+              <div class="input-group">
+                <input type="text"
+                       id="coupon-code"
+                       class="form-control"
+                       placeholder="{{ 'cart.coupon_placeholder' | t | default('Enter code…') }}"
+                       aria-label="{{ 'cart.coupon_label' | t | default('Coupon Code') }}">
+                <div class="input-group-append">
+                  <button type="button"
+                          class="btn btn-outline-primary js-apply-coupon"
+                          id="btn-apply-coupon">
+                    {{ 'cart.apply_coupon' | t | default('Apply') }}
+                  </button>
+                </div>
+              </div>
+              <div class="cart-coupon__feedback mt-2 d-none" id="coupon-feedback" role="alert" aria-live="polite"></div>
+            </div>
+
+            {# Checkout CTA #}
+            <salla-button
+              id="btn-checkout"
+              class="d-block w-100 mt-4"
+              href="{{ salla.checkout_url | default('/checkout') }}"
+              size="lg"
+              color="primary"
+              width="wide">
+              <i class="fa fa-lock mr-2" aria-hidden="true"></i>
+              {{ 'cart.proceed_to_checkout' | t | default('Proceed to Checkout') }}
+            </salla-button>
+
+            {# Payment icons #}
+            {% if store.payment_icons is defined and store.payment_icons %}
+              <div class="cart-summary__payments mt-3 text-center">
+                {% for icon in store.payment_icons %}
+                  <img src="{{ icon.image }}" alt="{{ icon.name }}" loading="lazy" height="24">
+                {% endfor %}
+              </div>
+            {% endif %}
+
+            {# Trust badges #}
+            <ul class="cart-trust-list list-unstyled mb-0 mt-3">
+              <li><i class="fa fa-shield-alt text-primary" aria-hidden="true"></i> {{ 'cart.trust_secure' | t | default('100% secure checkout') }}</li>
+              <li><i class="fa fa-undo text-primary" aria-hidden="true"></i> {{ 'cart.trust_returns' | t | default('Easy returns policy') }}</li>
+              <li><i class="fa fa-headset text-primary" aria-hidden="true"></i> {{ 'cart.trust_support' | t | default('24/7 customer support') }}</li>
+            </ul>
+
+          </div>
+        </div>
+      </div>
+
+    </div>
+  {% endif %}
+
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+  <script src="{{ 'js/cart.js' | asset }}"></script>
+{% endblock %}

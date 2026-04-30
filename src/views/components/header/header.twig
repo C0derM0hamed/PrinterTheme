@@ -1,0 +1,294 @@
+{#
+  Header
+  ------
+  Three layers stacked top-down:
+    1. announcement bar  – small utility strip with locale + contact info
+    2. main header       – logo, search, customer actions, sticky on scroll
+    3. primary nav       – category mega-trigger + page links + auth link
+    4. mobile drawer     – off-canvas panel triggered by the hamburger button
+
+  Salla integration:
+    - Cart count is kept in sync by the `cart.updated` event in theme.js.
+    - Wishlist count uses Salla's `customer.wishlist_count` server var.
+    - Search posts to /search which Salla resolves to the search results page.
+#}
+
+{% set _phone = store.phone | default('') %}
+{% set _email = store.email | default('') %}
+{% set _has_announce = _phone or _email %}
+
+<header class="site-header" data-direction="{{ store.direction }}">
+
+  {# 1. Announcement bar #}
+  {% if _has_announce %}
+    <div class="site-header__announce d-none d-md-block">
+      <div class="container-fluid">
+        <div class="d-flex align-items-center justify-content-between">
+          <div class="site-header__announce-meta">
+            {% if _phone %}
+              <a href="tel:{{ _phone }}" class="site-header__meta-link">
+                <i class="fa fa-phone-alt" aria-hidden="true"></i>
+                <span>{{ _phone }}</span>
+              </a>
+            {% endif %}
+            {% if _email %}
+              <a href="mailto:{{ _email }}" class="site-header__meta-link">
+                <i class="fa fa-envelope" aria-hidden="true"></i>
+                <span>{{ _email }}</span>
+              </a>
+            {% endif %}
+          </div>
+
+          <div class="site-header__announce-actions">
+            {# Salla auto-renders the language + currency switcher when available. #}
+            <salla-language-bar></salla-language-bar>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+  {# 2. Main header — logo / search / customer actions #}
+  <div class="site-header__main" id="site-header-main">
+    <div class="container-fluid">
+      <div class="d-flex align-items-center site-header__row">
+
+        {# Mobile hamburger #}
+        <button type="button"
+                class="site-header__burger d-lg-none"
+                aria-label="{{ 'common.menu' | t | default('Menu') }}"
+                aria-controls="mobile-drawer"
+                aria-expanded="false"
+                data-toggle="mobile-drawer">
+          <span></span><span></span><span></span>
+        </button>
+
+        {# Logo #}
+        <a href="{{ store.url }}" class="site-header__logo" aria-label="{{ store.name }}">
+          {% if store.logo %}
+            <img src="{{ store.logo }}" alt="{{ store.name }}" loading="eager">
+          {% else %}
+            <span class="site-header__logo-text">{{ store.name }}</span>
+          {% endif %}
+        </a>
+
+        {# Desktop search #}
+        <form action="/search" method="get" class="site-header__search d-none d-lg-flex" role="search">
+          <input type="search"
+                 name="keyword"
+                 class="form-control"
+                 placeholder="{{ 'search.placeholder' | t | default('Search products, services or files…') }}"
+                 aria-label="{{ 'search.placeholder' | t | default('Search') }}">
+          <button type="submit" class="site-header__search-btn" aria-label="{{ 'search.submit' | t | default('Search') }}">
+            <i class="fa fa-search" aria-hidden="true"></i>
+          </button>
+        </form>
+
+        {# Customer actions #}
+        <div class="site-header__actions">
+
+          {# Mobile search trigger #}
+          <button type="button"
+                  class="site-header__action d-lg-none"
+                  aria-label="{{ 'search.submit' | t | default('Search') }}"
+                  data-toggle="mobile-search">
+            <i class="fa fa-search" aria-hidden="true"></i>
+          </button>
+
+          {# Account #}
+          {% if customer.is_logged_in %}
+            <a href="/profile" class="site-header__action d-none d-md-inline-flex"
+               aria-label="{{ 'account.profile' | t | default('Account') }}">
+              <i class="fa fa-user" aria-hidden="true"></i>
+              <span class="site-header__action-label">{{ customer.first_name | default(('account.profile' | t | default('Account'))) }}</span>
+            </a>
+          {% else %}
+            <a href="/login" class="site-header__action d-none d-md-inline-flex"
+               aria-label="{{ 'auth.login' | t | default('Login') }}">
+              <i class="fa fa-user" aria-hidden="true"></i>
+              <span class="site-header__action-label">{{ 'auth.login' | t | default('Login') }}</span>
+            </a>
+          {% endif %}
+
+          {# Wishlist #}
+          <a href="/wishlist" class="site-header__action site-header__action--icon"
+             aria-label="{{ 'wishlist.title' | t | default('Wishlist') }}">
+            <i class="fa fa-heart" aria-hidden="true"></i>
+            <span class="site-header__badge" id="wishlist-count">{{ customer.wishlist_count | default(0) }}</span>
+          </a>
+
+          {# Cart #}
+          <a href="/cart" class="site-header__action site-header__action--icon"
+             aria-label="{{ 'cart.title' | t | default('Cart') }}">
+            <i class="fa fa-shopping-bag" aria-hidden="true"></i>
+            <span class="site-header__badge" id="cart-count">{{ cart.count | default(0) }}</span>
+          </a>
+
+        </div>
+      </div>
+
+      {# Mobile inline search (toggled) #}
+      <form action="/search" method="get" class="site-header__search site-header__search--mobile d-lg-none" role="search" hidden>
+        <input type="search"
+               name="keyword"
+               class="form-control"
+               placeholder="{{ 'search.placeholder' | t | default('Search products, services or files…') }}"
+               aria-label="{{ 'search.placeholder' | t | default('Search') }}">
+        <button type="submit" class="site-header__search-btn" aria-label="{{ 'search.submit' | t | default('Search') }}">
+          <i class="fa fa-search" aria-hidden="true"></i>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  {# 3. Primary navigation — desktop only #}
+  <nav class="site-header__nav d-none d-lg-block" aria-label="{{ 'nav.primary' | t | default('Primary') }}">
+    <div class="container-fluid">
+      <div class="d-flex align-items-stretch">
+
+        {# Category mega-trigger #}
+        <div class="site-header__cats dropdown">
+          <button type="button"
+                  class="site-header__cats-btn dropdown-toggle"
+                  data-toggle="dropdown"
+                  aria-haspopup="true"
+                  aria-expanded="false">
+            <i class="fa fa-bars" aria-hidden="true"></i>
+            <span>{{ 'categories.title' | t | default('Categories') }}</span>
+          </button>
+          <div class="dropdown-menu site-header__cats-menu">
+            {% if categories %}
+              {% for category in categories | slice(0, 12) %}
+                <a class="dropdown-item" href="{{ category.url }}">
+                  {% if category.image %}
+                    <img src="{{ category.image | image_resize(28, 28) }}" alt="" aria-hidden="true">
+                  {% else %}
+                    <i class="fa fa-folder-open" aria-hidden="true"></i>
+                  {% endif %}
+                  <span>{{ category.name }}</span>
+                </a>
+              {% endfor %}
+            {% else %}
+              <span class="dropdown-item-text text-muted">{{ 'categories.empty' | t | default('No categories yet.') }}</span>
+            {% endif %}
+          </div>
+        </div>
+
+        {# Main links #}
+        <ul class="site-header__menu">
+          <li><a href="{{ store.url }}" class="{% if page_type == 'home' %}is-active{% endif %}">{{ 'nav.home' | t | default('Home') }}</a></li>
+          <li><a href="/products" class="{% if page_type == 'products' %}is-active{% endif %}">{{ 'nav.shop' | t | default('Shop') }}</a></li>
+          {% if store.pages %}
+            {% for page in store.pages | slice(0, 4) %}
+              <li><a href="{{ page.url }}">{{ page.title }}</a></li>
+            {% endfor %}
+          {% endif %}
+          <li><a href="/blogs">{{ 'nav.blog' | t | default('Blog') }}</a></li>
+          <li><a href="/contact-us">{{ 'nav.contact' | t | default('Contact') }}</a></li>
+        </ul>
+
+        {# CTA #}
+        {% set _wa = theme.settings.get('whatsapp_phone') %}
+        {% if _wa %}
+          <a href="https://wa.me/{{ _wa }}"
+             class="site-header__cta"
+             target="_blank"
+             rel="noopener">
+            <i class="fa-brands fa-whatsapp" aria-hidden="true"></i>
+            <span>{{ 'nav.quote' | t | default('Get a quote') }}</span>
+          </a>
+        {% endif %}
+      </div>
+    </div>
+  </nav>
+</header>
+
+{# 4. Mobile drawer #}
+<div class="mobile-drawer" id="mobile-drawer" aria-hidden="true" role="dialog" aria-modal="true" aria-label="{{ 'common.menu' | t | default('Menu') }}">
+  <div class="mobile-drawer__backdrop" data-close="mobile-drawer"></div>
+  <aside class="mobile-drawer__panel" tabindex="-1">
+
+    <div class="mobile-drawer__head">
+      <a href="{{ store.url }}" class="mobile-drawer__logo">
+        {% if store.logo %}
+          <img src="{{ store.logo }}" alt="{{ store.name }}">
+        {% else %}
+          <span>{{ store.name }}</span>
+        {% endif %}
+      </a>
+      <button type="button"
+              class="mobile-drawer__close"
+              aria-label="{{ 'common.close' | t | default('Close') }}"
+              data-close="mobile-drawer">
+        <i class="fa fa-times" aria-hidden="true"></i>
+      </button>
+    </div>
+
+    <form action="/search" method="get" class="mobile-drawer__search" role="search">
+      <input type="search"
+             name="keyword"
+             class="form-control"
+             placeholder="{{ 'search.placeholder' | t | default('Search') }}"
+             aria-label="{{ 'search.placeholder' | t | default('Search') }}">
+      <button type="submit" aria-label="{{ 'search.submit' | t | default('Search') }}">
+        <i class="fa fa-search" aria-hidden="true"></i>
+      </button>
+    </form>
+
+    <nav class="mobile-drawer__nav" aria-label="{{ 'nav.primary' | t | default('Primary') }}">
+      <a href="{{ store.url }}">{{ 'nav.home' | t | default('Home') }}</a>
+      <a href="/products">{{ 'nav.shop' | t | default('Shop') }}</a>
+      {% if store.pages %}
+        {% for page in store.pages | slice(0, 6) %}
+          <a href="{{ page.url }}">{{ page.title }}</a>
+        {% endfor %}
+      {% endif %}
+      <a href="/blogs">{{ 'nav.blog' | t | default('Blog') }}</a>
+      <a href="/contact-us">{{ 'nav.contact' | t | default('Contact') }}</a>
+    </nav>
+
+    {% if categories %}
+      <div class="mobile-drawer__section">
+        <h6 class="mobile-drawer__title">{{ 'categories.title' | t | default('Categories') }}</h6>
+        <div class="mobile-drawer__cats">
+          {% for category in categories | slice(0, 10) %}
+            <a href="{{ category.url }}">
+              {% if category.image %}
+                <img src="{{ category.image | image_resize(24, 24) }}" alt="" aria-hidden="true">
+              {% else %}
+                <i class="fa fa-tag" aria-hidden="true"></i>
+              {% endif %}
+              <span>{{ category.name }}</span>
+            </a>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+
+    <div class="mobile-drawer__section mobile-drawer__account">
+      {% if customer.is_logged_in %}
+        <a href="/profile" class="btn btn-outline-primary btn-block">
+          <i class="fa fa-user mr-2" aria-hidden="true"></i>{{ 'account.profile' | t | default('My Account') }}
+        </a>
+      {% else %}
+        <a href="/login" class="btn btn-primary btn-block">
+          <i class="fa fa-user mr-2" aria-hidden="true"></i>{{ 'auth.login' | t | default('Login') }}
+        </a>
+        <a href="/register" class="btn btn-outline-primary btn-block">
+          {{ 'auth.register' | t | default('Create account') }}
+        </a>
+      {% endif %}
+    </div>
+
+    {% if store.social %}
+      <div class="mobile-drawer__section mobile-drawer__social">
+        {% if store.social.twitter %}<a href="{{ store.social.twitter }}" target="_blank" rel="noopener" aria-label="Twitter"><i class="fa-brands fa-twitter" aria-hidden="true"></i></a>{% endif %}
+        {% if store.social.instagram %}<a href="{{ store.social.instagram }}" target="_blank" rel="noopener" aria-label="Instagram"><i class="fa-brands fa-instagram" aria-hidden="true"></i></a>{% endif %}
+        {% if store.social.facebook %}<a href="{{ store.social.facebook }}" target="_blank" rel="noopener" aria-label="Facebook"><i class="fa-brands fa-facebook-f" aria-hidden="true"></i></a>{% endif %}
+        {% if store.social.snapchat %}<a href="{{ store.social.snapchat }}" target="_blank" rel="noopener" aria-label="Snapchat"><i class="fa-brands fa-snapchat" aria-hidden="true"></i></a>{% endif %}
+        {% if store.social.tiktok %}<a href="{{ store.social.tiktok }}" target="_blank" rel="noopener" aria-label="TikTok"><i class="fa-brands fa-tiktok" aria-hidden="true"></i></a>{% endif %}
+      </div>
+    {% endif %}
+
+  </aside>
+</div>

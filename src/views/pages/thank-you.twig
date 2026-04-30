@@ -1,0 +1,187 @@
+{% extends 'layouts/master.twig' %}
+
+{% block title %}{{ 'order.thank_you_title' | t | default('Thank You for Your Order!') }} — {{ store.name }}{% endblock %}
+{% block description %}{{ 'order.thank_you_meta' | t | default('Your order has been placed successfully.') }}{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid px-xl-5 py-5" id="thank-you-page">
+
+  {# ─── Success banner ─────────────────────────────────────────────────────── #}
+  <div class="thank-you-hero text-center py-5">
+    <div class="thank-you-hero__icon mb-4">
+      <span class="thank-you-hero__circle">
+        <i class="fa fa-check" aria-hidden="true"></i>
+      </span>
+    </div>
+    <h1 class="thank-you-hero__title">{{ 'order.thank_you_title' | t | default('Thank You!') }}</h1>
+    <p class="thank-you-hero__sub text-muted">
+      {{ 'order.thank_you_body' | t | default('Your order has been placed successfully. We\'re getting started on your print job right away.') }}
+    </p>
+    {% if order.reference_id is defined %}
+      <div class="thank-you-hero__ref mt-3">
+        <span class="badge badge-light border px-3 py-2 font-size-14">
+          {{ 'order.reference_label' | t | default('Order #') }}{{ order.reference_id }}
+        </span>
+      </div>
+    {% endif %}
+  </div>
+
+  {# ─── Order summary card ──────────────────────────────────────────────────── #}
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="card border-0 shadow-sm rounded-12 mb-4">
+        <div class="card-body p-4 p-md-5">
+
+          <h2 class="h5 mb-4 font-weight-600">{{ 'order.summary_title' | t | default('Order Summary') }}</h2>
+
+          {# Items list #}
+          {% if order.products is defined and order.products | length %}
+            <div class="order-items mb-4">
+              {% for item in order.products %}
+                <div class="order-item d-flex align-items-start mb-3">
+                  <div class="order-item__img mr-3">
+                    {% if item.image %}
+                      <img src="{{ item.image | image_resize(72, 72) }}"
+                           alt="{{ item.name }}"
+                           loading="lazy"
+                           width="72" height="72"
+                           class="rounded">
+                    {% else %}
+                      <div class="order-item__img-placeholder rounded">
+                        <i class="fa fa-print" aria-hidden="true"></i>
+                      </div>
+                    {% endif %}
+                  </div>
+                  <div class="order-item__body flex-grow-1">
+                    <div class="d-flex justify-content-between">
+                      <span class="order-item__name font-weight-500">{{ item.name }}</span>
+                      <span class="order-item__price">{{ item.total | money }}</span>
+                    </div>
+                    <span class="order-item__qty text-muted small">
+                      {{ 'cart.quantity' | t | default('Qty') }}: {{ item.quantity }}
+                    </span>
+                    {% if item.notes %}
+                      <p class="order-item__notes small text-muted mb-0">{{ item.notes }}</p>
+                    {% endif %}
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          {% endif %}
+
+          {# Totals #}
+          <dl class="order-totals border-top pt-3">
+            {% if order.subtotal is defined %}
+              <div class="order-totals__row">
+                <dt>{{ 'cart.subtotal' | t | default('Subtotal') }}</dt>
+                <dd>{{ order.subtotal | money }}</dd>
+              </div>
+            {% endif %}
+            {% if order.discount is defined and order.discount > 0 %}
+              <div class="order-totals__row order-totals__row--discount">
+                <dt>{{ 'cart.discount' | t | default('Discount') }}</dt>
+                <dd>-{{ order.discount | money }}</dd>
+              </div>
+            {% endif %}
+            {% if order.shipping_cost is defined %}
+              <div class="order-totals__row">
+                <dt>{{ 'cart.shipping' | t | default('Shipping') }}</dt>
+                <dd>{{ order.shipping_cost | money }}</dd>
+              </div>
+            {% endif %}
+            {% if order.tax is defined and order.tax > 0 %}
+              <div class="order-totals__row">
+                <dt>{{ 'cart.tax' | t | default('VAT') }}</dt>
+                <dd>{{ order.tax | money }}</dd>
+              </div>
+            {% endif %}
+            <div class="order-totals__row order-totals__row--grand">
+              <dt>{{ 'cart.grand_total' | t | default('Total') }}</dt>
+              <dd>{{ order.amount | money }}</dd>
+            </div>
+          </dl>
+
+        </div>
+      </div>
+
+      {# ─── Shipping / delivery info ─────────────────────────────────────────── #}
+      {% if order.shipping_address is defined %}
+        <div class="row mb-4">
+          <div class="col-md-6 mb-3 mb-md-0">
+            <div class="card border-0 shadow-sm rounded-12 h-100">
+              <div class="card-body p-4">
+                <h3 class="h6 font-weight-600 mb-3">
+                  <i class="fa fa-map-marker-alt text-primary mr-2" aria-hidden="true"></i>
+                  {{ 'order.shipping_address' | t | default('Shipping Address') }}
+                </h3>
+                <address class="mb-0 text-muted small">
+                  {% set addr = order.shipping_address %}
+                  {{ addr.name }}<br>
+                  {{ addr.block }} {{ addr.street }}<br>
+                  {{ addr.city }}, {{ addr.country }}<br>
+                  {% if addr.phone %}<a href="tel:{{ addr.phone }}">{{ addr.phone }}</a>{% endif %}
+                </address>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="card border-0 shadow-sm rounded-12 h-100">
+              <div class="card-body p-4">
+                <h3 class="h6 font-weight-600 mb-3">
+                  <i class="fa fa-truck text-primary mr-2" aria-hidden="true"></i>
+                  {{ 'order.shipping_info' | t | default('Delivery Info') }}
+                </h3>
+                {% if order.shipping is defined %}
+                  <p class="mb-1 font-weight-500">{{ order.shipping.name }}</p>
+                {% endif %}
+                {% if order.estimated_delivery is defined %}
+                  <p class="text-muted small mb-0">
+                    {{ 'order.estimated_delivery' | t | default('Estimated delivery:') }}
+                    <strong>{{ order.estimated_delivery }}</strong>
+                  </p>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+      {% endif %}
+
+      {# ─── Payment method ───────────────────────────────────────────────────── #}
+      {% if order.payment_method is defined %}
+        <div class="card border-0 shadow-sm rounded-12 mb-4">
+          <div class="card-body p-4">
+            <h3 class="h6 font-weight-600 mb-2">
+              <i class="fa fa-credit-card text-primary mr-2" aria-hidden="true"></i>
+              {{ 'order.payment_method' | t | default('Payment Method') }}
+            </h3>
+            <p class="text-muted mb-0">{{ order.payment_method }}</p>
+          </div>
+        </div>
+      {% endif %}
+
+      {# ─── CTAs ─────────────────────────────────────────────────────────────── #}
+      <div class="d-flex flex-wrap gap-3 justify-content-center mt-4">
+        {% if order.id is defined %}
+          <a href="/orders/{{ order.id }}"
+             class="btn btn-primary btn-lg">
+            <i class="fa fa-eye mr-2" aria-hidden="true"></i>
+            {{ 'order.view_order' | t | default('View Order') }}
+          </a>
+        {% endif %}
+        <a href="{{ store.url }}" class="btn btn-outline-secondary btn-lg">
+          <i class="fa fa-home mr-2" aria-hidden="true"></i>
+          {{ 'nav.home' | t | default('Home') }}
+        </a>
+        <a href="/products" class="btn btn-outline-primary btn-lg">
+          {{ 'cart.continue_shopping' | t | default('Continue Shopping') }}
+        </a>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+{% endblock %}

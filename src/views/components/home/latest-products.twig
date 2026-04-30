@@ -1,0 +1,88 @@
+{#
+  Latest products
+  ---------------
+  Up to 4 newest products. Mirrors the featured-products partial but reads
+  from `products.latest` and falls back to `<salla-products-list source="latest">`
+  so the slot stays populated even on a fresh demo store.
+#}
+
+{% set _latest = products.latest | default([]) %}
+
+<section id="latest-products" class="section" aria-label="{{ 'products.latest' | t | default('Latest products') }}">
+  <div class="container-fluid">
+
+    <header class="section-title">
+      <span class="eyebrow">{{ 'products.latest_eyebrow' | t | default('Just in') }}</span>
+      <h2>{{ 'products.latest' | t | default('Latest products') }}</h2>
+      <span class="section-title__rule" aria-hidden="true"></span>
+      <p>{{ 'products.latest_subtitle' | t | default('Fresh additions to our print catalogue.') }}</p>
+    </header>
+
+    {% if _latest | length > 0 %}
+      <div class="products-grid">
+        {% for product in _latest | slice(0, 4) %}
+          <article class="product-item">
+            <div class="product-img">
+              {% if product.thumbnail %}
+                <img src="{{ product.thumbnail | image_resize(360, 360) }}"
+                     alt="{{ product.name }}"
+                     loading="lazy">
+              {% endif %}
+              {% if product.is_new %}
+                <span class="product-offer">{{ 'product.new' | t | default('New') }}</span>
+              {% elseif product.on_sale %}
+                <span class="product-offer">{{ 'product.sale' | t | default('Sale') }}</span>
+              {% endif %}
+              <div class="product-action">
+                <a href="{{ product.url }}" class="btn btn-outline-primary">
+                  <i class="fa fa-eye" aria-hidden="true"></i>
+                  <span>{{ 'product.view' | t | default('View') }}</span>
+                </a>
+                <a href="{{ product.url }}" class="btn btn-primary">
+                  <i class="fa fa-shopping-bag" aria-hidden="true"></i>
+                  <span>{{ 'product.order' | t | default('Order') }}</span>
+                </a>
+              </div>
+            </div>
+            <div class="product-body">
+              <a class="product-title" href="{{ product.url }}">{{ product.name }}</a>
+              <div class="product-price">
+                {% if product.on_sale %}
+                  <span class="product-price__sale">{{ product.sale_price | money }}</span>
+                  <span class="product-price__old"><del>{{ product.price | money }}</del></span>
+                {% else %}
+                  <span>{{ product.price | money }}</span>
+                {% endif %}
+              </div>
+              {% if product.rating is defined %}
+                <div class="product-rating" aria-label="{{ product.rating }} / 5">
+                  {% for i in 1..5 %}
+                    <i class="fa fa-star {% if i > product.rating %}is-empty{% endif %}" aria-hidden="true"></i>
+                  {% endfor %}
+                  <span>({{ product.reviews_count | default(0) }})</span>
+                </div>
+              {% endif %}
+            </div>
+          </article>
+        {% endfor %}
+      </div>
+
+      <div class="text-center mt-5">
+        <a href="/products" class="btn btn-outline-primary">
+          {{ 'products.view_all' | t | default('View all products') }}
+          <i class="fa fa-arrow-right" aria-hidden="true"></i>
+        </a>
+      </div>
+    {% else %}
+      <salla-products-list source="latest" limit="4" class="products-grid">
+        <div class="empty-state" slot="empty">
+          <span class="empty-state__icon"><i class="fa fa-clock" aria-hidden="true"></i></span>
+          <h4>{{ 'products.no_latest' | t | default('No products yet') }}</h4>
+          <p>{{ 'products.no_latest_desc' | t | default('Add products from your dashboard and they\'ll appear here automatically.') }}</p>
+          <a href="/products" class="btn btn-primary">{{ 'products.browse_all' | t | default('Browse all products') }}</a>
+        </div>
+      </salla-products-list>
+    {% endif %}
+
+  </div>
+</section>

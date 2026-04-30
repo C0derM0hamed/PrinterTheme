@@ -1,0 +1,82 @@
+{% extends 'layouts/master.twig' %}
+
+{% block title %}{{ 'account.notifications' | t | default('Notifications') }} — {{ store.name }}{% endblock %}
+
+{% block content %}
+
+<nav class="breadcrumb-bar" aria-label="{{ 'nav.breadcrumb' | t | default('Breadcrumb') }}">
+  <div class="container-fluid px-xl-5">
+    <ol class="breadcrumb mb-0 py-3">
+      <li class="breadcrumb-item"><a href="{{ store.url }}">{{ 'nav.home' | t | default('Home') }}</a></li>
+      <li class="breadcrumb-item active" aria-current="page">{{ 'account.notifications' | t | default('Notifications') }}</li>
+    </ol>
+  </div>
+</nav>
+
+<div class="container-fluid px-xl-5 py-5">
+  <div class="row">
+
+    <div class="col-lg-3 mb-4 mb-lg-0">
+      <div class="account-sidebar card border-0 shadow-sm rounded-12">
+        <div class="card-body p-0">
+          <nav class="account-sidebar__nav">
+            <a href="/profile"       class="account-sidebar__link"><i class="fa fa-user mr-2" aria-hidden="true"></i>{{ 'account.profile' | t | default('Profile') }}</a>
+            <a href="/orders"        class="account-sidebar__link"><i class="fa fa-box mr-2" aria-hidden="true"></i>{{ 'account.orders' | t | default('Orders') }}</a>
+            <a href="/wishlist"      class="account-sidebar__link"><i class="fa fa-heart mr-2" aria-hidden="true"></i>{{ 'wishlist.title' | t | default('Wishlist') }}</a>
+            <a href="/notifications" class="account-sidebar__link is-active"><i class="fa fa-bell mr-2" aria-hidden="true"></i>{{ 'account.notifications' | t | default('Notifications') }}</a>
+            <a href="/logout"        class="account-sidebar__link account-sidebar__link--danger"><i class="fa fa-sign-out-alt mr-2" aria-hidden="true"></i>{{ 'auth.logout' | t | default('Logout') }}</a>
+          </nav>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-9">
+      <div class="d-flex align-items-center justify-content-between mb-4">
+        <h1 class="h4 mb-0 font-weight-600">{{ 'account.notifications' | t | default('Notifications') }}</h1>
+        {% if notifications is defined and notifications | length > 0 %}
+          <a href="/notifications/mark-all-read" class="btn btn-sm btn-outline-secondary">
+            {{ 'notifications.mark_all_read' | t | default('Mark all as read') }}
+          </a>
+        {% endif %}
+      </div>
+
+      {% if notifications is defined and notifications | length > 0 %}
+        <div class="notifications-list">
+          {% for notif in notifications %}
+            <div class="notification-item card border-0 shadow-sm rounded-12 mb-3 {% if not notif.is_read %}notification-item--unread{% endif %}">
+              <div class="card-body p-4 d-flex align-items-start">
+                <div class="notification-item__icon mr-3
+                  {% if notif.type == 'order' %}notification-item__icon--order
+                  {% elseif notif.type == 'promo' %}notification-item__icon--promo
+                  {% else %}notification-item__icon--info{% endif %}">
+                  <i class="fa
+                    {% if notif.type == 'order' %}fa-box
+                    {% elseif notif.type == 'promo' %}fa-tag
+                    {% else %}fa-bell{% endif %}" aria-hidden="true"></i>
+                </div>
+                <div class="flex-grow-1">
+                  <p class="notification-item__body mb-1">{{ notif.message }}</p>
+                  <span class="notification-item__time text-muted small">{{ notif.created_at | date('d M Y, H:i') }}</span>
+                </div>
+                {% if not notif.is_read %}
+                  <span class="notification-item__dot" aria-label="{{ 'notifications.unread' | t | default('Unread') }}"></span>
+                {% endif %}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="empty-state text-center py-6">
+          <div class="empty-state__icon">
+            <i class="fa fa-bell" aria-hidden="true"></i>
+          </div>
+          <h2 class="empty-state__title">{{ 'notifications.empty_title' | t | default('No notifications yet') }}</h2>
+          <p class="empty-state__body">{{ 'notifications.empty_body' | t | default('We\'ll let you know when something important happens.') }}</p>
+        </div>
+      {% endif %}
+
+    </div>
+  </div>
+</div>
+
+{% endblock %}

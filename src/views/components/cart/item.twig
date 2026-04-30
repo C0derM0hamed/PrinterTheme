@@ -1,0 +1,88 @@
+{#
+  Cart Item Component
+  -------------------
+  Rendered for each item in cart.items.
+  Expects `item` variable in scope.
+  Quantity updates and removal are wired in cart.js.
+#}
+<div class="cart-item" data-item-id="{{ item.id }}" data-product-id="{{ item.product_id }}">
+  <div class="cart-item__img">
+    <a href="{{ item.product_url | default('#') }}">
+      <img src="{{ item.image | default(item.thumbnail) | image_resize(120, 120) | default('/placeholder.png') }}"
+           alt="{{ item.name }}"
+           loading="lazy"
+           width="120" height="120">
+    </a>
+  </div>
+
+  <div class="cart-item__body">
+    <a href="{{ item.product_url | default('#') }}" class="cart-item__name">{{ item.name }}</a>
+
+    {# Print-spec notes — displayed when the item carries a `notes` field #}
+    {% if item.notes %}
+      <p class="cart-item__notes">{{ item.notes }}</p>
+    {% endif %}
+
+    {# Selected options (paper type, color mode, etc.) #}
+    {% if item.options is defined and item.options %}
+      <ul class="cart-item__opts list-unstyled mb-0">
+        {% for opt in item.options %}
+          <li><span class="cart-item__opt-name">{{ opt.name }}:</span> {{ opt.value }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    {# Uploaded design file badge #}
+    {% if item.files is defined and item.files | length %}
+      <span class="cart-item__file-badge">
+        <i class="fa fa-paperclip" aria-hidden="true"></i>
+        {{ 'cart.file_attached' | t | default('Design file attached') }}
+      </span>
+    {% endif %}
+  </div>
+
+  <div class="cart-item__meta">
+    {# Qty stepper #}
+    <div class="cart-item__qty qty-stepper" role="group" aria-label="{{ 'cart.quantity' | t | default('Quantity') }}">
+      <button type="button"
+              class="qty-stepper__btn js-cart-decrease"
+              aria-label="{{ 'common.decrease' | t | default('Decrease') }}"
+              data-item-id="{{ item.id }}">
+        <i class="fa fa-minus" aria-hidden="true"></i>
+      </button>
+      <input type="number"
+             class="qty-stepper__input js-cart-qty"
+             value="{{ item.quantity }}"
+             min="1"
+             aria-label="{{ 'cart.quantity' | t | default('Quantity') }}"
+             data-item-id="{{ item.id }}">
+      <button type="button"
+              class="qty-stepper__btn js-cart-increase"
+              aria-label="{{ 'common.increase' | t | default('Increase') }}"
+              data-item-id="{{ item.id }}">
+        <i class="fa fa-plus" aria-hidden="true"></i>
+      </button>
+    </div>
+
+    {# Price #}
+    <div class="cart-item__price">
+      {% if item.on_sale is defined and item.on_sale %}
+        <span class="cart-item__price-old">{{ item.original_price | money }}</span>
+      {% endif %}
+      <span class="cart-item__price-current">{{ item.price | money }}</span>
+    </div>
+
+    {# Line total #}
+    <div class="cart-item__total js-cart-line-total" data-item-id="{{ item.id }}">
+      {{ item.total | money }}
+    </div>
+
+    {# Remove #}
+    <button type="button"
+            class="cart-item__remove js-cart-remove"
+            aria-label="{{ 'cart.remove_item' | t | default('Remove item') }}"
+            data-item-id="{{ item.id }}">
+      <i class="fa fa-times" aria-hidden="true"></i>
+    </button>
+  </div>
+</div>
