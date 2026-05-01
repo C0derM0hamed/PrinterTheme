@@ -34,7 +34,8 @@
 
   var PRODUCT_ID   = page.dataset.productId;
   var BASE_PRICE   = parseFloat(page.dataset.basePrice) || 0;
-  var BASE_DAYS    = parseInt(($('#delivery-eta-row') || {}).dataset?.baseDays) || 3;
+  var _etaEl    = $('#delivery-eta-row');
+  var BASE_DAYS = parseInt((_etaEl && _etaEl.dataset && _etaEl.dataset.baseDays) ? _etaEl.dataset.baseDays : '3', 10) || 3;
 
   /* =============================================================================
      1. OPTION STATE MACHINE

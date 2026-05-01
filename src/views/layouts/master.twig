@@ -1,17 +1,19 @@
+{# PrinterTheme — Twilight-required hooks + Salla-compatible asset URLs. #}
+
+{% set _fontRaw = theme.settings.get('font_family', 'Poppins') %}
+{% set _font = (_fontRaw is iterable) ? (attribute(_fontRaw, 'value')|default(attribute(_fontRaw, 'label')|default('Poppins'))) : _fontRaw %}
+
 <!DOCTYPE html>
-<html lang="{{ store.language }}" dir="{{ store.direction }}">
+<html lang="{{ (language is defined ? language.code : store.language) | default('ar') }}" dir="{{ theme.is_rtl is defined ? (theme.is_rtl ? 'rtl' : 'ltr') : (store.direction | default('rtl')) }}">
 <head>
   <meta charset="utf-8">
   <meta http-equiv="x-ua-compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta name="theme-color" content="{{ theme.settings.get('primary_color') | default('#0d6efd') }}">
-  <meta name="format-detection" content="telephone=no">
 
   {% block head %}
     <title>{% block title %}{{ store.name }}{% endblock %}</title>
     <meta name="description" content="{% block description %}{{ store.description }}{% endblock %}">
 
-    {# Open Graph defaults — page templates may override via the title/description blocks. #}
     <meta property="og:site_name" content="{{ store.name }}">
     <meta property="og:title" content="{{ block('title') }}">
     <meta property="og:description" content="{{ block('description') }}">
@@ -19,17 +21,18 @@
     {% if store.logo %}<meta property="og:image" content="{{ store.logo }}">{% endif %}
     <meta name="twitter:card" content="summary_large_image">
 
-    {# Salla head hook — must run before our stylesheet so injected meta/JSON-LD render in order. #}
-    {{ salla.head() }}
+    {% hook 'head:start' %}
+    {% hook head %}
+
+    <meta name="theme-color" content="{{ theme.settings.get('primary_color') | default('#0d6efd') }}">
+    <meta name="format-detection" content="telephone=no">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="dns-prefetch" href="https://stackpath.bootstrapcdn.com">
-    <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
     <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+    <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
 
-    {# Fonts: load only the selected family for a smaller payload. Defaults to Poppins. #}
-    {% set _font = theme.settings.get('font_family') | default('Poppins') %}
+    {% block styles %}
     {% if _font == 'Cairo' %}
       <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&display=swap">
     {% elseif _font == 'Tajawal' %}
@@ -38,33 +41,40 @@
       <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
     {% endif %}
 
-    {# Bootstrap 4 + Font Awesome 6 (with v4 shims so legacy `fa fa-*` classes keep working). #}
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/v4-shims.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/v4-shims.min.css" crossorigin="anonymous">
+    {% endblock %}
 
-    <link rel="stylesheet" href="{{ 'styles/main.css' | asset }}">
+    <link rel="stylesheet" href="{{ 'main.css' | asset }}" crossorigin="anonymous">
 
-    <link rel="icon" type="image/x-icon" href="{{ store.favicon | default(store.logo) }}">
-    <link rel="apple-touch-icon" href="{{ store.favicon | default(store.logo) }}">
+    {% set fav = store.icon | default(store.favicon | default(store.logo)) %}
+    {% if fav %}
+      <link rel="icon" type="image/png" href="{{ fav }}">
+      <link rel="apple-touch-icon" href="{{ fav }}">
+    {% endif %}
 
-    {# Theme tokens piped from twilight.json settings — the bulk of styling lives in main.css. #}
     <style id="theme-tokens">
       :root {
         --color-primary: {{ theme.settings.get('primary_color') | default('#0d6efd') }};
         --color-accent: {{ theme.settings.get('accent_color') | default('#ff6b4a') }};
-        --font-family-base: '{{ _font }}', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        --font-family-base: '{{ _font | e }}', system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
       }
     </style>
+
+    {% hook 'head:end' %}
   {% endblock %}
 </head>
-<body class="theme-printer" data-direction="{{ store.direction }}" data-locale="{{ store.language }}">
+
+<body id="printer-theme" class="theme-printer {{ store.direction | default('') }} {% hook 'body:classes' %}">
+
+  {% hook 'body:start' %}
 
   <a href="#main-content" class="skip-link sr-only sr-only-focusable">{{ 'common.skip_to_content' | t | default('Skip to content') }}</a>
 
   {% include 'components/header/header.twig' ignore missing %}
 
-  <main id="main-content" class="theme-main" tabindex="-1">
+  <main id="main-content" class="theme-main" tabindex="-1" role="main">
     {% block content %}{% endblock %}
   </main>
 
@@ -76,22 +86,20 @@
 
   {% set _wa = theme.settings.get('whatsapp_phone') %}
   {% if _wa %}
-    <a href="https://wa.me/{{ _wa }}"
-       class="wa-fab"
-       target="_blank"
-       rel="noopener"
-       aria-label="WhatsApp">
+    <a href="https://wa.me/{{ _wa }}" class="wa-fab" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp">
       <i class="fa-brands fa-whatsapp" aria-hidden="true"></i>
     </a>
   {% endif %}
 
-  <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
-  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
-  <script src="{{ 'js/theme.js' | asset }}"></script>
+  <script src="https://code.jquery.com/jquery-3.4.1.min.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.min.js" crossorigin="anonymous"></script>
 
-  {{ salla.footer() }}
+  {% hook 'body:end' %}
+
+  <script src="{{ 'theme.js' | asset }}"></script>
 
   {% block scripts %}{% endblock %}
+
 </body>
 </html>

@@ -160,7 +160,7 @@
             <salla-button
               id="btn-checkout"
               class="d-block w-100 mt-4"
-              href="{{ salla.checkout_url | default('/checkout') }}"
+              href="/checkout"
               size="lg"
               color="primary"
               width="wide">
@@ -196,5 +196,5 @@
 {% endblock %}
 
 {% block scripts %}
-  <script src="{{ 'js/cart.js' | asset }}"></script>
+  <script src="{{ 'cart.js' | asset }}"></script>
 {% endblock %}

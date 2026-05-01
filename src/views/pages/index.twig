@@ -1,9 +1,6 @@
 {#
-  Home page (index)
-  -----------------
-  Composed of small, focused partials so the merchant can re-order or remove
-  individual sections from the theme dashboard. Twilight maps this template
-  to the storefront root URL.
+  Home — static shell (always renders preview without empty composer slots).
+  Merchants customize via Featured / Latest feeds + twilight Features.
 #}
 {% extends 'layouts/master.twig' %}
 
@@ -17,11 +14,8 @@
   {% endif %}
 
   {% include 'components/home/features.twig' ignore missing %}
-
   {% include 'components/home/categories-grid.twig' ignore missing %}
-
   {% include 'components/home/featured-products.twig' ignore missing %}
-
   {% include 'components/home/latest-products.twig' ignore missing %}
 
 {% endblock %}

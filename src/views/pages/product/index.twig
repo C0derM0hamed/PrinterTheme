@@ -22,9 +22,11 @@
   - Empty-state illustration with CTAs for both search and category views.
 #}
 
-{% set _is_search   = request.q is not empty %}
-{% set _query       = request.q | default('') %}
-{% set _per_row     = theme.settings.get('products_per_row') | default('3') | number_format %}
+{% set _query     = request.q | default(request.keyword | default('')) %}
+{% set _is_search = _query is not empty %}
+{% set _pr        = theme.settings.get('products_per_row', '3') %}
+{% set _per_row   = (_pr is iterable) ? (attribute(_pr, 'value') | default(attribute(_pr, 'label') | default('3'))) : _pr %}
+{% set _per_row   = _per_row|string|trim %}
 {% set _col_class   = _per_row == 4 ? 'col-lg-3 col-md-4 col-sm-6'
                       : (_per_row == 2 ? 'col-lg-6 col-sm-6'
                       : 'col-lg-4 col-md-6 col-sm-6') %}

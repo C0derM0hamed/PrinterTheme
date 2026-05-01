@@ -41,8 +41,32 @@
     "title": "Search Results",
     "results_for": "Results for \"%s\"",
     "no_results_title": "No results found",
+    "no_results": "No results found",
     "no_results_body": "Try a different keyword or browse our categories.",
+    "no_results_desc": "Try different keywords or browse our catalog.",
+    "for": "for",
     "meta_description": "Search our catalogue of print products and services."
+  },
+
+  "filter": {
+    "show_filters": "Filters",
+    "sidebar": "Filters",
+    "price_range": "Price Range",
+    "min": "Min",
+    "max": "Max",
+    "apply": "Apply",
+    "clear": "Clear filters",
+    "tags": "Tags"
+  },
+
+  "sort": {
+    "label": "Sort by",
+    "default": "Default",
+    "newest": "Newest",
+    "price_asc": "Price: Low to High",
+    "price_desc": "Price: High to Low",
+    "popular": "Most Popular",
+    "rating": "Top Rated"
   },
 
   "categories": {
@@ -68,6 +92,10 @@
     "filter_apply": "Apply Filters",
     "filter_reset": "Reset",
     "results_count": "%d product(s) found",
+    "found": "products found",
+    "browse_all": "Browse all products",
+    "empty_category": "No products yet",
+    "empty_category_desc": "This category doesn't have any products yet. Check back soon!",
     "no_products_title": "No products found",
     "no_products_body": "Try adjusting your filters or search term.",
     "search_results_for": "Results for \"%s\""

@@ -41,8 +41,32 @@
     "title": "نتائج البحث",
     "results_for": "نتائج البحث عن \"%s\"",
     "no_results_title": "لا توجد نتائج",
+    "no_results": "لا توجد نتائج",
     "no_results_body": "جرّب كلمة مختلفة أو تصفّح الفئات.",
+    "no_results_desc": "جرّب كلمات أخرى أو تصفّح المتجر.",
+    "for": "لـ",
     "meta_description": "ابحث في كتالوج منتجات وخدمات الطباعة."
+  },
+
+  "filter": {
+    "show_filters": "التصفية",
+    "sidebar": "التصفية",
+    "price_range": "نطاق السعر",
+    "min": "الحد الأدنى",
+    "max": "الحد الأقصى",
+    "apply": "تطبيق",
+    "clear": "مسح الفلاتر",
+    "tags": "الوسوم"
+  },
+
+  "sort": {
+    "label": "ترتيب حسب",
+    "default": "افتراضي",
+    "newest": "الأحدث",
+    "price_asc": "السعر: من الأقل للأعلى",
+    "price_desc": "السعر: من الأعلى للأقل",
+    "popular": "الأكثر شعبية",
+    "rating": "الأعلى تقييماً"
   },
 
   "categories": {
@@ -68,6 +92,10 @@
     "filter_apply": "تطبيق التصفية",
     "filter_reset": "إعادة ضبط",
     "results_count": "تم العثور على %d منتج",
+    "found": "منتج موجود",
+    "browse_all": "تصفّح كل المنتجات",
+    "empty_category": "لا توجد منتجات بعد",
+    "empty_category_desc": "هذه الفئة لا تحتوي على منتجات حالياً.",
     "no_products_title": "لا توجد منتجات",
     "no_products_body": "جرّب تعديل التصفية أو كلمة البحث.",
     "search_results_for": "نتائج \"%s\""

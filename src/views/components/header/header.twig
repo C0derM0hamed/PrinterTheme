@@ -75,7 +75,7 @@
         {# Desktop search #}
         <form action="/search" method="get" class="site-header__search d-none d-lg-flex" role="search">
           <input type="search"
-                 name="keyword"
+                 name="q"
                  class="form-control"
                  placeholder="{{ 'search.placeholder' | t | default('Search products, services or files…') }}"
                  aria-label="{{ 'search.placeholder' | t | default('Search') }}">
@@ -130,7 +130,7 @@
       {# Mobile inline search (toggled) #}
       <form action="/search" method="get" class="site-header__search site-header__search--mobile d-lg-none" role="search" hidden>
         <input type="search"
-               name="keyword"
+               name="q"
                class="form-control"
                placeholder="{{ 'search.placeholder' | t | default('Search products, services or files…') }}"
                aria-label="{{ 'search.placeholder' | t | default('Search') }}">
@@ -226,7 +226,7 @@
 
     <form action="/search" method="get" class="mobile-drawer__search" role="search">
       <input type="search"
-             name="keyword"
+             name="q"
              class="form-control"
              placeholder="{{ 'search.placeholder' | t | default('Search') }}"
              aria-label="{{ 'search.placeholder' | t | default('Search') }}">

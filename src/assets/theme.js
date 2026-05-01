@@ -91,7 +91,7 @@
     $drawer
       .addClass('is-open')
       .attr('aria-hidden', 'false');
-    $body.addClass('drawer-open');
+    $body.addClass('has-drawer-open');
     $('[aria-controls="' + DRAWER_ID + '"]').attr('aria-expanded', 'true');
     /* Move focus into the panel for accessibility */
     var $panel = $drawer.find('.mobile-drawer__panel');
@@ -102,7 +102,7 @@
     $drawer
       .removeClass('is-open')
       .attr('aria-hidden', 'true');
-    $body.removeClass('drawer-open');
+    $body.removeClass('has-drawer-open');
     $('[aria-controls="' + DRAWER_ID + '"]').attr('aria-expanded', 'false');
     if (_lastFocus) { _lastFocus.focus(); }
   }
