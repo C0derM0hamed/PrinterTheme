@@ -1,5 +1,5 @@
 /* =============================================================================
-   PrinterTheme — main.css
+   PrinterTheme — app.css
    Layered on top of Bootstrap 4. Design tokens drive the visual system; every
    surface (header, footer, cards, hero, forms, print toolkit) reads from the
    same set of CSS variables so merchant overrides cascade everywhere.

@@ -1,5 +1,5 @@
 /* =============================================================================
-   PrinterTheme — theme.js
+   PrinterTheme — app.js
    Global behaviour shared across every page:
      1.  Back-to-top button         — scroll-triggered fade + smooth scroll
      2.  Sticky header shadow       — subtle elevation when user scrolls down

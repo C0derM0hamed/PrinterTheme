@@ -4,10 +4,7 @@
   "description": "PrinterTheme — a Salla Twilight theme tailored for print shops, with a premium UI and an enhanced print-spec / file-upload toolkit. Built on Bootstrap 4 + jQuery + Font Awesome via CDN (no compile step).",
   "private": true,
   "license": "MIT",
-  "author": {
-    "name": "PrinterTheme Authors",
-    "url": "https://salla.dev"
-  },
+  "author": "PrinterTheme Authors (https://salla.dev)",
   "keywords": [
     "salla",
     "salla-theme",
@@ -26,5 +23,18 @@
     "publish:theme": "salla theme publish",
     "lint:json": "node -e \"['twilight.json','src/locales/en.json','src/locales/ar.json'].forEach(f=>{try{JSON.parse(require('fs').readFileSync(f,'utf8'));console.log('ok',f)}catch(e){console.error('FAIL',f,e.message);process.exit(1)}})\"",
     "lint": "npm run lint:json"
+  },
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/C0derM0hamed/PrinterTheme.git"
+  },
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/C0derM0hamed/PrinterTheme/issues"
+  },
+  "homepage": "https://github.com/C0derM0hamed/PrinterTheme#readme",
+  "dependencies": {
+    "@salla.sa/cli": "^3.2.30"
   }
 }

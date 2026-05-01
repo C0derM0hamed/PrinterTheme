@@ -309,7 +309,7 @@
   }
 
   /* =============================================================================
-     5. QUANTITY STEPPER (product page specific — theme.js handles generic ones)
+     5. QUANTITY STEPPER (product page specific — app.js handles generic ones)
      ============================================================================= */
 
   var qtyInput = $('#product-qty');

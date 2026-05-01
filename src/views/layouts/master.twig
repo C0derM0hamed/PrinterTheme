@@ -46,7 +46,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/v4-shims.min.css" crossorigin="anonymous">
     {% endblock %}
 
-    <link rel="stylesheet" href="{{ 'main.css' | asset }}" crossorigin="anonymous">
+    <link rel="stylesheet" href="{{ 'app.css' | asset }}" crossorigin="anonymous">
 
     {% set fav = store.icon | default(store.favicon | default(store.logo)) %}
     {% if fav %}
@@ -97,7 +97,7 @@
 
   {% hook 'body:end' %}
 
-  <script src="{{ 'theme.js' | asset }}"></script>
+  <script src="{{ 'app.js' | asset }}"></script>
 
   {% block scripts %}{% endblock %}
 
