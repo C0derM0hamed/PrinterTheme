@@ -53,10 +53,10 @@
     {% endblock %}
 
     <link rel="stylesheet" href="{{ 'app.css' | asset }}" crossorigin="anonymous">
-    <link rel="stylesheet" href="{{ 'fonts/sallaicons.css' | cdn }}"/>
+    <link rel="stylesheet" href="{{ 'fonts/sallaicons.css'|cdn }}"/>
 
-    {% if theme.font is defined and theme.font and theme.font.path is defined and theme.font.path %}
-      <link rel="stylesheet" href="{{ theme.font.path | cdn }}"/>
+    {% if theme.font is defined and theme.font and attribute(theme.font, 'path') %}
+      <link rel="stylesheet" href="{{ theme.font.path|cdn }}"/>
     {% endif %}
 
     {% set fav = store.icon | default(store.favicon | default(store.logo)) %}

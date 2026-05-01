@@ -1,7 +1,7 @@
 {% extends 'layouts/master.twig' %}
 
 {% block title %}{{ brand.name }} — {{ store.name }}{% endblock %}
-{% block description %}{{ 'brands.single_meta' | t({ brand: brand.name }) | default('Browse ' ~ brand.name ~ ' products.') }}{% endblock %}
+{% block description %}{{ ('brands.single_meta' | t | default('Browse %{brand} products.')) | replace({'%{brand}': brand.name}) }}{% endblock %}
 
 {% block content %}
 
@@ -58,7 +58,7 @@
     <div class="empty-state text-center py-6">
       <div class="empty-state__icon"><i class="fa fa-box-open" aria-hidden="true"></i></div>
       <h2 class="empty-state__title">{{ 'brands.no_products_title' | t | default('No products found') }}</h2>
-      <p class="empty-state__body">{{ 'brands.no_products_body' | t({ brand: brand.name }) | default('No products available for this brand yet.') }}</p>
+      <p class="empty-state__body">{{ 'brands.no_products_body' | t | default('No products available for this brand yet.') }}</p>
       <a href="/products" class="btn btn-primary mt-3">{{ 'nav.shop' | t | default('Browse Shop') }}</a>
     </div>
   {% endif %}

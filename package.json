@@ -20,11 +20,14 @@
   },
   "scripts": {
     "preview": "salla theme preview",
+    "prepreview": "npm run production",
     "publish:theme": "salla theme publish",
     "development": "webpack --mode development",
     "production": "webpack --mode production",
     "prod": "webpack --mode production",
     "watch": "webpack --mode development --watch",
+    "smoke": "node scripts/smoke-assets.mjs",
+    "smoke:headed": "SMOKE_HEADED=1 node scripts/smoke-assets.mjs",
     "lint:json": "node -e \"['twilight.json','src/locales/en.json','src/locales/ar.json'].forEach(f=>{try{JSON.parse(require('fs').readFileSync(f,'utf8'));console.log('ok',f)}catch(e){console.error('FAIL',f,e.message);process.exit(1)}})\"",
     "lint": "npm run lint:json"
   },
@@ -53,6 +56,7 @@
     "css-minimizer-webpack-plugin": "^7.0.2",
     "glob": "^11.0.3",
     "mini-css-extract-plugin": "^2.10.0",
+    "playwright": "1.49",
     "postcss": "^8.5.6",
     "postcss-loader": "^8.2.0",
     "webpack": "^5.103.0",

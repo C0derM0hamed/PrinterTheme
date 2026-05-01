@@ -396,7 +396,7 @@
       {% endif %}
       <div class="flex-fill">
         <div class="font-weight-medium text-truncate" style="max-width: 200px;">{{ product.name }}</div>
-        <div class="font-weight-bold text-primary" id="mobile-display-price">{{ product.on_sale ? product.sale_price : product.price | money }}</div>
+        <div class="font-weight-bold text-primary" id="mobile-display-price">{{ (product.on_sale ? product.sale_price : product.price) | money }}</div>
       </div>
       <button
         class="btn btn-primary ml-3"

@@ -20,7 +20,7 @@
   <h1 class="page-title mb-1">{{ 'cart.title' | t | default('Shopping Cart') }}</h1>
   <p class="text-muted small mb-0">
     {% if cart.count is defined and cart.count > 0 %}
-      {{ 'cart.item_count' | t({ count: cart.count }) | default(cart.count ~ ' item(s) in your cart') }}
+      {{ ('cart.item_count' | t | default('%d item(s) in your cart')) | replace({'%d': cart.count}) }}
     {% endif %}
   </p>
 </div>
