@@ -1,4 +1,4 @@
-{# PrinterTheme — Twilight-required hooks + Salla-compatible asset URLs. #}
+{# PrinterTheme — Salla hooks + Raed-compatible asset loading #}
 
 {% set _fontRaw = theme.settings.get('font_family', 'Poppins') %}
 {% set _font = (_fontRaw is iterable) ? (attribute(_fontRaw, 'value')|default(attribute(_fontRaw, 'label')|default('Poppins'))) : _fontRaw %}
@@ -9,6 +9,12 @@
   <meta charset="utf-8">
   <meta http-equiv="x-ua-compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  {{ theme.settings.set('placeholder', 'images/placeholder.png') }}
+
+  <script defer data-cfasync="false" crossorigin="anonymous" src="{{ 'product-card.js' | asset }}"></script>
+
+  {% block head_scripts %}{% endblock %}
 
   {% block head %}
     <title>{% block title %}{{ store.name }}{% endblock %}</title>
@@ -47,6 +53,11 @@
     {% endblock %}
 
     <link rel="stylesheet" href="{{ 'app.css' | asset }}" crossorigin="anonymous">
+    <link rel="stylesheet" href="{{ 'fonts/sallaicons.css' | cdn }}"/>
+
+    {% if theme.font is defined and theme.font and theme.font.path is defined and theme.font.path %}
+      <link rel="stylesheet" href="{{ theme.font.path | cdn }}"/>
+    {% endif %}
 
     {% set fav = store.icon | default(store.favicon | default(store.logo)) %}
     {% if fav %}
@@ -69,6 +80,11 @@
 <body id="printer-theme" class="theme-printer {{ store.direction | default('') }} {% hook 'body:classes' %}">
 
   {% hook 'body:start' %}
+
+  <noscript>
+    {{ 'common.enable_javascript' | t | default('Enable JavaScript for full store functionality.') }}
+    <a href="https://www.enable-javascript.com/" rel="noreferrer" target="_blank">enable-javascript.com</a>
+  </noscript>
 
   <a href="#main-content" class="skip-link sr-only sr-only-focusable">{{ 'common.skip_to_content' | t | default('Skip to content') }}</a>
 
@@ -97,7 +113,14 @@
 
   {% hook 'body:end' %}
 
-  <script src="{{ 'app.js' | asset }}"></script>
+  <salla-offer-modal></salla-offer-modal>
+  <salla-search></salla-search>
+  <salla-login-modal></salla-login-modal>
+  {% if store.scope is defined and store.scope %}
+    <salla-scopes selection="{{ store.scope.display_as == 'popup' ? 'mandatory' : 'optional' }}"></salla-scopes>
+  {% endif %}
+
+  <script defer crossorigin="anonymous" src="{{ 'app.js' | asset }}"></script>
 
   {% block scripts %}{% endblock %}
 

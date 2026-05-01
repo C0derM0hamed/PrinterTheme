@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 48" width="180" height="48" role="img" aria-label="PrinterTheme logo">
+  <title>PrinterTheme</title>
+  <!-- Printer icon mark -->
+  <rect x="4" y="12" width="30" height="20" rx="4" fill="#0d6efd"/>
+  <rect x="10" y="6" width="18" height="8" rx="2" fill="#0d6efd"/>
+  <rect x="10" y="28" width="18" height="14" rx="1" fill="#fff" stroke="#0d6efd" stroke-width="1.5"/>
+  <rect x="13" y="32" width="12" height="2" rx="1" fill="#0d6efd"/>
+  <rect x="13" y="36" width="8" height="2" rx="1" fill="#0d6efd"/>
+  <circle cx="29" cy="22" r="2" fill="#fff"/>
+  <!-- Logotype -->
+  <text x="42" y="32" font-family="Poppins, Arial, sans-serif" font-weight="700" font-size="18" fill="#0d6efd" letter-spacing="-0.5">Printer</text>
+  <text x="120" y="32" font-family="Poppins, Arial, sans-serif" font-weight="300" font-size="18" fill="#6c757d">Theme</text>
+</svg>

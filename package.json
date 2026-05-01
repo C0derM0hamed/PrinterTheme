@@ -1,7 +1,7 @@
 {
   "name": "printer-theme",
   "version": "1.0.0",
-  "description": "PrinterTheme — a Salla Twilight theme tailored for print shops, with a premium UI and an enhanced print-spec / file-upload toolkit. Built on Bootstrap 4 + jQuery + Font Awesome via CDN (no compile step).",
+  "description": "PrinterTheme — Salla Twilight theme for print shops (Bootstrap 4 + webpack + ThemeWatcher).",
   "private": true,
   "license": "MIT",
   "author": "PrinterTheme Authors (https://salla.dev)",
@@ -21,10 +21,13 @@
   "scripts": {
     "preview": "salla theme preview",
     "publish:theme": "salla theme publish",
+    "development": "webpack --mode development",
+    "production": "webpack --mode production",
+    "prod": "webpack --mode production",
+    "watch": "webpack --mode development --watch",
     "lint:json": "node -e \"['twilight.json','src/locales/en.json','src/locales/ar.json'].forEach(f=>{try{JSON.parse(require('fs').readFileSync(f,'utf8'));console.log('ok',f)}catch(e){console.error('FAIL',f,e.message);process.exit(1)}})\"",
     "lint": "npm run lint:json"
   },
-  "main": "index.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/C0derM0hamed/PrinterTheme.git"
@@ -35,6 +38,24 @@
   },
   "homepage": "https://github.com/C0derM0hamed/PrinterTheme#readme",
   "dependencies": {
+    "@babel/runtime": "^7.28.6",
     "@salla.sa/cli": "^3.2.30"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.29.0",
+    "@babel/plugin-transform-runtime": "^7.28.0",
+    "@babel/preset-env": "^7.29.2",
+    "@salla.sa/twilight": "^2.14.419",
+    "autoprefixer": "^10.4.21",
+    "babel-loader": "^10.0.0",
+    "copy-webpack-plugin": "^13.0.1",
+    "css-loader": "^6.11.0",
+    "css-minimizer-webpack-plugin": "^7.0.2",
+    "glob": "^11.0.3",
+    "mini-css-extract-plugin": "^2.10.0",
+    "postcss": "^8.5.6",
+    "postcss-loader": "^8.2.0",
+    "webpack": "^5.103.0",
+    "webpack-cli": "^5.1.4"
   }
 }
