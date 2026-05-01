@@ -10,9 +10,13 @@ const publicDir = (file) => path.resolve('public', file || '');
 module.exports = {
   entry: {
     app: [asset('styles/app.css'), asset('js/app.js')],
+    home: asset('js/home.js'),
     'product-card': asset('js/partials/product-card.js'),
-    cart: asset('js/cart.js'),
-    product: asset('js/product.js'),
+    'main-menu': asset('js/partials/main-menu.js'),
+    checkout: [asset('js/cart.js'), asset('js/thankyou.js')],
+    pages: asset('js/pages.js'),
+    product: [asset('js/product.js'), asset('js/products.js')],
+    order: asset('js/order.js'),
   },
   output: {
     path: publicDir(),
@@ -24,7 +28,10 @@ module.exports = {
     rules: [
       {
         test: /\.js$/,
-        exclude: /node_modules/,
+        exclude: [
+          /node_modules/,
+          asset('js/twilight.js'),
+        ],
         use: {
           loader: 'babel-loader',
           options: {

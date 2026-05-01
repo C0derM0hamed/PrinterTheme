@@ -12,7 +12,8 @@
 
   {{ theme.settings.set('placeholder', 'images/placeholder.png') }}
 
-  <script defer data-cfasync="false" crossorigin="anonymous" src="{{ 'product-card.js' | asset }}"></script>
+  <script defer data-cfasync="false" crossorigin="anonymous" src="{{ 'product-card.js'|asset }}"></script>
+  <script defer src="{{ 'main-menu.js'|asset }}"></script>
 
   {% block head_scripts %}{% endblock %}
 
@@ -113,14 +114,14 @@
 
   {% hook 'body:end' %}
 
+  <script defer crossorigin="anonymous" src="{{ 'app.js' | asset }}"></script>
+
   <salla-offer-modal></salla-offer-modal>
   <salla-search></salla-search>
   <salla-login-modal></salla-login-modal>
   {% if store.scope is defined and store.scope %}
     <salla-scopes selection="{{ store.scope.display_as == 'popup' ? 'mandatory' : 'optional' }}"></salla-scopes>
   {% endif %}
-
-  <script defer crossorigin="anonymous" src="{{ 'app.js' | asset }}"></script>
 
   {% block scripts %}{% endblock %}
 
