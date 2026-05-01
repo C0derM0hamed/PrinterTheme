@@ -14,6 +14,23 @@
   <meta http-equiv="x-ua-compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
+  {# GTM / merchant snippets often use global `Salla`; the storefront SDK is `salla`.
+     Define this before {% hook head %} so Tag Manager can resolve the identifier. #}
+  <script>
+    (function () {
+      if (Object.prototype.hasOwnProperty.call(window, 'Salla')) return;
+      try {
+        Object.defineProperty(window, 'Salla', {
+          configurable: true,
+          enumerable: true,
+          get: function () { return window.salla; }
+        });
+      } catch (e) {
+        window.Salla = window.salla;
+      }
+    })();
+  </script>
+
   {{ theme.settings.set('placeholder', 'images/placeholder.png') }}
 
   {% block head_scripts %}{% endblock %}
