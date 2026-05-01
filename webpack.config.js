@@ -10,13 +10,8 @@ const publicDir = (file) => path.resolve('public', file || '');
 module.exports = {
   entry: {
     app: [asset('styles/app.css'), asset('js/app.js')],
-    home: asset('js/home.js'),
-    'product-card': asset('js/partials/product-card.js'),
-    'main-menu': asset('js/partials/main-menu.js'),
-    checkout: [asset('js/cart.js'), asset('js/thankyou.js')],
-    pages: asset('js/pages.js'),
-    product: [asset('js/product.js'), asset('js/products.js')],
-    order: asset('js/order.js'),
+    checkout: asset('js/cart.js'),
+    product: asset('js/product.js'),
   },
   output: {
     path: publicDir(),

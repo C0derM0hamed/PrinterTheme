@@ -15,13 +15,25 @@
   if (!page) return;
 
   /* ─── Helpers ─────────────────────────────────────────────────────────── */
+  /*
+     Salla bootstraps Twilight on the page and exposes a global `salla`
+     object. Use `salla.onReady(cb)` — there is no `salla:ready` DOM event.
+  */
 
   function sallaReady(cb) {
-    if (typeof salla !== 'undefined') {
-      cb();
-    } else {
-      document.addEventListener('salla:ready', cb, { once: true });
+    if (typeof salla !== 'undefined' && typeof salla.onReady === 'function') {
+      salla.onReady(cb);
+      return;
     }
+    var tries = 0;
+    var t = setInterval(function () {
+      if (typeof salla !== 'undefined' && typeof salla.onReady === 'function') {
+        clearInterval(t);
+        salla.onReady(cb);
+      } else if (++tries > 50) {
+        clearInterval(t);
+      }
+    }, 100);
   }
 
   function formatMoney(amount) {
@@ -161,7 +173,7 @@
       }
       setLoading(applyBtn, true);
       sallaReady(function () {
-        salla.cart.applyCoupon(code)
+        salla.cart.applyCoupon({ coupon: code })
           .then(function (res) {
             setLoading(applyBtn, false);
             if (feedback) {
@@ -235,11 +247,15 @@
   }
 
   /* ─── Salla cart.updated event (fires from other tabs / Salla widgets) ── */
+  /*
+     Use the typed `salla.cart.event.onUpdated` hook — it receives a
+     `CartSummary` object directly (no `.data` wrapper).
+  */
 
   sallaReady(function () {
-    if (salla.event && salla.event.on) {
-      salla.event.on('cart.updated', function (res) {
-        refreshCartUI({ data: res });
+    if (salla.cart && salla.cart.event && typeof salla.cart.event.onUpdated === 'function') {
+      salla.cart.event.onUpdated(function (summary) {
+        refreshCartUI({ data: summary });
       });
     }
   });

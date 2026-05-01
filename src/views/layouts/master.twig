@@ -1,19 +1,20 @@
-{# PrinterTheme — Salla hooks + Raed-compatible asset loading #}
+{# PrinterTheme — Salla Twilight master layout #}
 
+{# Resolve the font setting which Twilight stores as either a scalar or
+   the selected dropdown item ({label,value,key}). #}
 {% set _fontRaw = theme.settings.get('font_family', 'Poppins') %}
-{% set _font = (_fontRaw is iterable) ? (attribute(_fontRaw, 'value')|default(attribute(_fontRaw, 'label')|default('Poppins'))) : _fontRaw %}
+{% set _font = (_fontRaw is iterable)
+  ? (attribute(_fontRaw, 'value') | default(attribute(_fontRaw, 'label') | default('Poppins')))
+  : _fontRaw %}
 
 <!DOCTYPE html>
-<html lang="{{ (language is defined ? language.code : store.language) | default('ar') }}" dir="{{ theme.is_rtl is defined ? (theme.is_rtl ? 'rtl' : 'ltr') : (store.direction | default('rtl')) }}">
+<html lang="{{ language.code | default('ar') }}" dir="{{ theme.is_rtl ? 'rtl' : 'ltr' }}">
 <head>
   <meta charset="utf-8">
   <meta http-equiv="x-ua-compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
   {{ theme.settings.set('placeholder', 'images/placeholder.png') }}
-
-  <script defer data-cfasync="false" crossorigin="anonymous" src="{{ 'product-card.js'|asset }}"></script>
-  <script defer src="{{ 'main-menu.js'|asset }}"></script>
 
   {% block head_scripts %}{% endblock %}
 
@@ -54,10 +55,11 @@
     {% endblock %}
 
     <link rel="stylesheet" href="{{ 'app.css' | asset }}" crossorigin="anonymous">
-    <link rel="stylesheet" href="{{ 'fonts/sallaicons.css'|cdn }}"/>
+    <link rel="stylesheet" href="{{ 'fonts/sallaicons.css' | cdn }}"/>
 
-    {% if theme.font is defined and theme.font and attribute(theme.font, 'path') %}
-      <link rel="stylesheet" href="{{ theme.font.path|cdn }}"/>
+    {# Salla-provided typography (only present when the theme has the `fonts` feature). #}
+    {% if theme.font and theme.font.path is defined %}
+      <link rel="stylesheet" href="{{ theme.font.path | cdn }}"/>
     {% endif %}
 
     {% set fav = store.icon | default(store.favicon | default(store.logo)) %}
@@ -68,9 +70,10 @@
 
     <style id="theme-tokens">
       :root {
-        --color-primary: {{ theme.settings.get('primary_color') | default('#0d6efd') }};
+        --color-primary: {{ theme.color.primary | default(theme.settings.get('primary_color') | default('#0d6efd')) }};
         --color-accent: {{ theme.settings.get('accent_color') | default('#ff6b4a') }};
-        --font-family-base: '{{ _font | e }}', system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        --color-primary-reverse: {{ theme.color.reverse_text | default('#ffffff') }};
+        --font-family-base: '{{ _font | e('html_attr') }}', system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
       }
     </style>
 
@@ -78,7 +81,7 @@
   {% endblock %}
 </head>
 
-<body id="printer-theme" class="theme-printer {{ store.direction | default('') }} {% hook 'body:classes' %}">
+<body id="printer-theme" class="theme-printer {{ theme.is_rtl ? 'is-rtl' : 'is-ltr' }} {% hook 'body:classes' %}">
 
   {% hook 'body:start' %}
 
@@ -116,10 +119,12 @@
 
   <script defer crossorigin="anonymous" src="{{ 'app.js' | asset }}"></script>
 
+  {# Twilight web components shipped by Salla — these render only when the
+     SDK is loaded on the page, which Salla injects automatically. #}
   <salla-offer-modal></salla-offer-modal>
   <salla-search></salla-search>
   <salla-login-modal></salla-login-modal>
-  {% if store.scope is defined and store.scope %}
+  {% if store.scope %}
     <salla-scopes selection="{{ store.scope.display_as == 'popup' ? 'mandatory' : 'optional' }}"></salla-scopes>
   {% endif %}
 

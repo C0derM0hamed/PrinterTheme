@@ -174,33 +174,55 @@
   }
 
   /* ── 8. Salla cart-count sync ───────────────────────────────────────────── */
+  /*
+     Salla exposes a global `salla` object once Twilight is bootstrapped.
+     The canonical entry point is `salla.onReady(cb)` (NOT a `salla:ready`
+     DOM event). For cart updates the typed API `salla.cart.event.onUpdated`
+     is preferred and ships with `summary` shaped data (count, total, items).
+  */
 
-  function sallaReady(cb) {
-    if (typeof salla !== 'undefined') {
-      cb();
+  function whenSallaReady(cb) {
+    if (typeof salla !== 'undefined' && typeof salla.onReady === 'function') {
+      salla.onReady(cb);
     } else {
-      document.addEventListener('salla:ready', cb, { once: true });
+      /* Fallback: poll briefly until Twilight injects the SDK. */
+      var tries = 0;
+      var t = setInterval(function () {
+        if (typeof salla !== 'undefined' && typeof salla.onReady === 'function') {
+          clearInterval(t);
+          salla.onReady(cb);
+        } else if (++tries > 50) {
+          clearInterval(t);
+        }
+      }, 100);
     }
   }
 
-  sallaReady(function () {
-    if (salla.event && typeof salla.event.on === 'function') {
-      salla.event.on('cart.updated', function (data) {
-        var count = 0;
-        if (data) {
-          /* Salla may pass the cart object directly or nested under .cart */
-          count = (data.count !== undefined)
-            ? data.count
-            : (data.cart && data.cart.count !== undefined ? data.cart.count : 0);
-        }
-        var badge = document.getElementById('cart-count');
-        if (badge) {
-          badge.textContent = count;
-          /* Subtle pulse animation to draw attention to the badge change */
-          badge.classList.remove('badge-pulse');
-          /* Force reflow so the animation re-triggers if already applied */
-          void badge.offsetWidth;
-          badge.classList.add('badge-pulse');
+  function paintCartCount(count) {
+    var badge = document.getElementById('cart-count');
+    if (!badge) return;
+    badge.textContent = (typeof salla !== 'undefined' && salla.helpers && salla.helpers.number)
+      ? salla.helpers.number(count)
+      : count;
+    badge.classList.remove('badge-pulse');
+    void badge.offsetWidth;
+    badge.classList.add('badge-pulse');
+  }
+
+  whenSallaReady(function () {
+    if (salla.cart && salla.cart.event && typeof salla.cart.event.onUpdated === 'function') {
+      salla.cart.event.onUpdated(function (summary) {
+        var count = (summary && summary.count !== undefined) ? summary.count : 0;
+        paintCartCount(count);
+
+        document.querySelectorAll('[data-cart-count]').forEach(function (el) {
+          el.textContent = (salla.helpers && salla.helpers.number)
+            ? salla.helpers.number(count) : count;
+        });
+        if (salla.money && summary && summary.total !== undefined) {
+          document.querySelectorAll('[data-cart-total]').forEach(function (el) {
+            el.innerHTML = salla.money(summary.total);
+          });
         }
       });
     }

@@ -116,7 +116,6 @@ async function runSmoke(base) {
 <link rel="stylesheet" href="${base}/app.css">
 </head><body id="printer-theme" class="theme-printer rtl">
 <div class="navbar"><div class="quantity"><input type="number" value="1"/></div></div>
-<script defer src="${base}/product-card.js"></script>
 <script defer src="${base}/app.js"></script>
 </body></html>`,
     { waitUntil: 'networkidle', url: 'http://printertheme.smoke/' }
@@ -134,7 +133,7 @@ async function runSmoke(base) {
 }
 
 async function main() {
-  const required = ['app.js', 'app.css', 'product-card.js'];
+  const required = ['app.js', 'app.css', 'checkout.js', 'product.js'];
   for (const f of required) {
     const p = path.join(publicDir, f);
     if (!fs.existsSync(p)) {

@@ -5,10 +5,11 @@
   Expects `item` variable in scope.
   Quantity updates and removal are wired in cart.js.
 #}
+{% set _ph = theme.settings.get('placeholder', 'images/placeholder.png') | asset %}
 <div class="cart-item" data-item-id="{{ item.id }}" data-product-id="{{ item.product_id }}">
   <div class="cart-item__img">
     <a href="{{ item.product_url | default('#') }}">
-      <img src="{{ item.image | default(item.thumbnail) | image_resize(120, 120) | default('/placeholder.png') }}"
+      <img src="{{ (item.image | default(item.thumbnail)) | image_resize(120, 120) | default(_ph) }}"
            alt="{{ item.name }}"
            loading="lazy"
            width="120" height="120">
